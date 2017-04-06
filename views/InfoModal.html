@@ -1,0 +1,56 @@
+<div class="modal-dialog {% if statusCode == 0 %}modal-sm{% endif %}">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			{% if statusCode == 1 %}
+			<h4 class="modal-title" id="workName">{{ getWork.name }} / {{getWork.Jname }}</h4>
+			{% elif statusCode == 2 %}
+			<h4 class="modal-title" id="workName">{{ getPlacemark.name }}</h4>
+			{% else %}
+			<h4 class="modal-title" id="workName">對不起！</h4>
+			{% endif %}
+		</div>
+		<div class="modal-body">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-8">
+						{% if statusCode == 1 %}
+						<p>&nbsp;&nbsp;&nbsp;&nbsp;{{ getWork.introduction }}</p>
+					</div>
+					<div class="col-md-4">
+						<img src="{{ getWork.imageUrl }}" height="200" class="img-thumbnail">
+						<p class="text-center"><small>來源：<a href="{{ getWork.imageSourceUrl }}" target="_blank">{{ getWork.imageSource }}</a></small></p>
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-md-12">
+						<h4>相關景點：</h4>
+						<ul class="list-unstyled">
+						{% for placemarkInfo in placemarkList %}
+							<li>
+								<p><a onClick="focusToPlacemark({{ placemarkInfo.placemark.longitude }},{{ placemarkInfo.placemark.latitude }})">{{ placemarkInfo.placemark.name }}</a>：{{ placemarkInfo.description }}</p>
+							</li>
+						{% endfor %}
+						</ul>
+						{% elif statusCode == 2 %}
+						<p>{{ getPlacemark.description }}</p>
+						<hr>
+						<h4>相關作品：</h4>
+						<ul>
+						{% for workInfo in workList %}
+							<li>{{ workInfo.name }} / {{getWork.Jname }}</li>
+						{% endfor %}
+						</ul>
+						{% else %}
+						<p>找不到相關的作品或地點。</p>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		</div>
+	</div>
+</div>
