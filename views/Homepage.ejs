@@ -66,9 +66,18 @@ function initMap() {
 					///////////////////////////////////////////////////////
 					///////////////////////處理座標資訊////////////////////
 					///////////////////////////////////////////////////////
+					$("#seceneName").innerHTML;
 
-
-					alert("Name: "+ data.scene[0].name + "\nWork: "+ data.work[0].c_name);
+					//alert("Name: "+ data.scene[0].name + "\nWork: "+ data.work[0].c_name);
+					$("#intro_test").text("Name: "+ data.scene[0].name + "\nWork: "+ data.work[0].c_name);
+					
+					
+					
+					
+					
+					///////////////////////////////////////////////////////
+					//////////////////////////施工中///////////////////////
+					///////////////////////////////////////////////////////
 				}
 			});
 		});
@@ -120,9 +129,12 @@ function initMap() {
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0&callback=initMap">
     </script>
     <div id="map" style="height: 80%; width: 100%;"></div>
-    <br>
-    <h2>Test</h2>
-
-
+    <br/>
+	<!--Introduction-->
+	<div id="intro">
+		<h2>Test1</h2>
+		<h2 id="intro_test">Test2</h2>
+	</div>
+	<!--施工中-->
 	</body>
 </html>
