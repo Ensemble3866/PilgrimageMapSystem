@@ -8,7 +8,8 @@ var Placemarks = mongoose.model('placemarks');
 var CompareImgs = mongoose.model('compareImgs');
 var Users = mongoose.model('users'); 
 
-//Handle model control
+/* Handle request from /manage */
+/* Handle model control */
 router.post('/submitWork', function(req, res, next) {
 
 	var newWork = new Works({
@@ -63,5 +64,7 @@ router.post('/submitPlacemark', function(req, res, next) {
 	})
 	res.redirect('/manage');
 });
+
+/* Handle  */
 
 module.exports = router;

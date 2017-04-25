@@ -40,26 +40,77 @@ p {
 		<script src="javascripts/bootstrap.min.js"></script>
 		<script type="text/javascript">
 
-function init() {
+function init(){
+
+	$("input[name=rdoWork]").click(function(){
+		if($('input[name=rdoWork]:checked').val() != "add"){
+			$("#selectEditWork").attr("disabled", false);
+			$("#selectEditWork").trigger("change");
+		}
+		else{
+			$("#selectEditWork").attr("disabled", true);
+		}
+	});
+	$("input[name=rdoScene]").click(function(){
+		if($('input[name=rdoScene]:checked').val() != "add"){
+			$("#selectEditScene").attr("disabled", false);
+			$("#selectEditScene").trigger("change");
+		}
+		else{
+			$("#selectEditScene").attr("disabled", true);
+		}
+	});
+	
+	$("#selectEditWork").change(function(){
+		$.post("/manage/getWorkInfo", {
+			workId : $("#selectEditWork").val()
+		}, function(data, status){
+			if(status=="success"){
+				$("input[name=workJName]").val(data.j_name);
+				$("input[name=workCName]").val(data.c_name);
+				$("input[name=workEName]").val(data.e_name);
+				$("textarea[name=workIntr]").val(data.introduction);
+			}
+		});
+	});
+	$("#selectEditScene").change(function(){
+		$.post("/manage/getSceneInfo", {
+			sceneId : $("#selectEditScene").val()
+		}, function(data, status){
+			if(status=="success"){
+				$("input[name=sceneName]").val(data.name);
+				$("input[name=latNum]").val(data.latitude);
+				$("input[name=lngNum]").val(data.longitude);
+				$("textarea[name=sceneDesc]").val(data.description);
+			}
+		});
+	});
+
 	showForm(1);
-}
+	$("#rdoWorkAdd").attr("checked", true);
+	$("#rdoSceneAdd").attr("checked", true);
+
+};
 
 function showForm(num) {
 	switch(num) {
-		case 1: $("#formBuildWork").fadeIn();
-				$("#formBuildScene").hide();
+		case 1: $("#formWork").fadeIn();
+				$("#formScene").hide();
 				$("#formBuildPlacemark").hide();
 				break;
-		case 2: $("#formBuildWork").hide();
-				$("#formBuildScene").fadeIn();
+		case 2: $("#formWork").hide();
+				$("#formScene").fadeIn();
 				$("#formBuildPlacemark").hide();
 				break;
-		case 3: $("#formBuildWork").hide();
-				$("#formBuildScene").hide();
+		case 3: $("#formWork").hide();
+				$("#formScene").hide();
 				$("#formBuildPlacemark").fadeIn();
 				break;
 	}
 };
+
+
+
 		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
@@ -101,38 +152,67 @@ function showForm(num) {
 	<br>
 	<div class="container">
    		<div class="row">
-   			<div class="col-md-12" id="DisplayBlock">
-   				<ul class="nav nav-tabs">
-   					<li role="presentation" class="active"><a href="javascript:showForm(1)">建立作品</a></li>
-   					<li role="presentation" class="active"><a href="javascript:showForm(2)">建立場景</a></li>
-   					<li role="presentation" class="active"><a href="javascript:showForm(3)">建立座標</a></li>
-   				</ul>
-				<br>
-   				<form role="form" action="/apis/submitWork" method="post" id="formBuildWork">
-		   			<label class="control-label" for="workJName">作品名稱（日文）</label>
-		   			<input type="text" class="form-control" name="workJName">
-		   			<br>
-		   			<label class="control-label" for="workCName">作品名稱（中文）</label>
-		   			<input type="text" class="form-control" name="workCName">
-		   			<br>
-		   			<label class="control-label" for="workEName">作品名稱（英文）</label>
-		   			<input type="text" class="form-control" name="workEName">
-		   			<br>
-	   				<button type="submit" class="btn btn-default" id="btnSubmitWork">送出</button>
+   			<ul class="nav nav-tabs">
+   				<li role="presentation" class="active"><a href="javascript:showForm(1)">編輯作品</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯場景</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯座標</a></li>
+   			</ul><br>
+   			<div class="col-md-6" id="DisplayBlock">
+   				<form role="form" action="/manage/submitWork" method="post" id="formWork">
+					<label class="radio-inline">
+						<input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="rdoWork" id="rdoWorkEdit" value="edit">編輯
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="rdoWork" id="rdoWorkDel" value="del" disabled>刪除
+					</label>
+					<label class="radio-inline" style="width: 200px;">
+						<select name="selectEditWork" id="selectEditWork" class="form-control" disabled>
+						<% for(var index in workList) {%>
+		 				<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
+		   				<% } %>
+						</select>
+					</label><br><br>
+				   	<label class="control-label" for="workJName">作品名稱（日文）</label>
+			   		<input type="text" class="form-control" name="workJName"><br>
+			   		<label class="control-label" for="workCName">作品名稱（中文）</label>
+			   		<input type="text" class="form-control" name="workCName"><br>
+			   		<label class="control-label" for="workEName">作品名稱（英文）</label>
+			   		<input type="text" class="form-control" name="workEName"><br>
+					<label class="control-label" for="workIntr">簡介</label>
+					<textarea class="form-control" name="workIntr" rows="5"></textarea><br>
+		   			<button type="submit" class="btn btn-default" id="btnSubmitWork">送出</button>
    				</form>
-   				<form role="form" action="/apis/submitScene" method="post" id="formBuildScene">
+   				<form role="form" action="/manage/submitScene" method="post" id="formScene">
+   					<label class="radio-inline">
+						<input type="radio" name="rdoScene" id="rdoSceneAdd" value="add">新增
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="rdoScene" id="rdoSceneEdit" value="edit">編輯
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="rdoScene" id="rdoSceneDel" value="del" disabled>刪除
+					</label>
+					<label class="radio-inline" style="width: 200px;">
+						<select name="selectEditScene" id="selectEditScene" class="form-control" disabled>
+						<% for(var index in sceneList) {%>
+		 				<option value="<%= sceneList[index]._id %>"><%= sceneList[index].name %></option>
+		   				<% } %>
+						</select>
+					</label><br><br>
 		   			<label class="control-label" for="sceneName">景點名稱</label>
-		   			<input type="text" class="form-control" name="sceneName">
-		   			<br>
+		   			<input type="text" class="form-control" name="sceneName"><br>
 		   			<label class="control-label" for="latNum">緯度(latitude)</label>
-		   			<input type="text" class="form-control" name="latNum">
-		   			<br>
+		   			<input type="text" class="form-control" name="latNum"><br>
 		   			<label class="control-label" or="longNum">經度(longitude)</label>
-		   			<input type="text" class="form-control" name="lngNum">
-		   			<br>
+		   			<input type="text" class="form-control" name="lngNum"><br>
+		   			<label class="control-label" for="sceneDesc">描述</label>
+					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
 	   				<button type="submit" class="btn btn-default" id="btnSubmitScene">送出</button>
    				</form>
-   				<form role="form" action="apis/submitPlacemark" method="post" id="formBuildPlacemark">
+   				<form role="form" action="/manage/submitPlacemark" method="post" id="formBuildPlacemark">
 		   			<label class="control-label" for="selectWork">選擇作品</label>
 		   			<select class="form-control" name="selectWork">
 		   			<% for(var index in workList) {%>

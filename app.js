@@ -8,7 +8,8 @@ var cookieSession = require('cookie-session');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var apis = require('./routes/apis');
+var manage = require('./routes/manage');
+//var apis = require('./routes/apis');
 
 var app = express();
 
@@ -26,8 +27,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieSession({key: 'nodejs', secret: 'bike2467'}));
 
 app.use('/', index);
+app.use('/manage', manage);
 app.use('/users', users);
-app.use('/apis', apis);
+//app.use('/apis', apis);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
