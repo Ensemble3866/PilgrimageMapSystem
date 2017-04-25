@@ -69,13 +69,17 @@ function initMap() {
 					$("#seceneName").innerHTML;
 					//alert("Name: "+ data.scene[0].name + "\nWork: "+ data.work[0].c_name);
 					
-					$("#place").text(data.scene[0].name+" : "+data.work.length);
+					$("#place").html(
+						"<h2>"+data.scene[0].name+" : "+data.work.length+"</h2>"+
+						"<p>"+data.scene[0].description+"</p>"
+					);
+
 					//$("#works").empty();
 					$("#works").append(
 					"<br/><div id='work'>"+
 					"<h3>"+data.work[0].c_name+" / "+data.work[0].j_name+" / "+data.work[0].e_name+"</h3>"+
 					"<p>"+data.work[0].category+"</p>"+
-					"<p>介紹內容..........</p>"+
+					"<p>"+data.work[0].introduction+"</p>"+
 					"<div id='pics'></div>"+
 					"</div>"
 					);
@@ -138,7 +142,9 @@ function initMap() {
 	<div id="intro">
 		<h2>Introduction</h2>
 		<br/>
-		<h2 id="place">Where</h2>
+		<div id="place">
+			<h2>Where</h2>
+		</div>
 		<br/>
 		<div id="works">
 			<div id="work">
