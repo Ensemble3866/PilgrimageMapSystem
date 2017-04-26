@@ -29,7 +29,6 @@ app.use(cookieSession({key: 'nodejs', secret: 'bike2467'}));
 app.use('/', index);
 app.use('/manage', manage);
 app.use('/users', users);
-//app.use('/apis', apis);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

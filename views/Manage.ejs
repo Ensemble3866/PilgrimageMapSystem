@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app>
+<html lang="en" ng-ap" manageControlApp">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,37 +8,38 @@
 		<!-- Bootstrap -->
 		<link href="stylesheets/bootstrap.min.css" rel="stylesheet">
 		<style>
-body {
-	padding-top: 50px;
-}
-p { 
-	line-height: 1.7em;
-	margin-after: 0.5em;
-	text-align: justify; 
-    text-justify: inter-ideographic;
-	word-break: break-all;
-}
-.center-block {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-.show {
-  display: block !important;
-}
-.hidden {
-  display: none !important;
-  visibility: hidden !important;
-}
-.invisible {
-  visibility: hidden;
-}
+			body {
+				padding-top: 50px;
+			}
+			p { 
+				line-height: 1.7em;
+				margin-after: 0.5em;
+				text-align: justify; 
+				text-justify: inter-ideographic;
+				word-break: break-all;
+			}
+			.center-block {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+			}
+			.show {
+			display: block !important;
+			}
+			.hidden {
+			display: none !important;
+			visibility: hidden !important;
+			}
+			.invisible {
+			visibility: hidden;
+			}
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+		<script type="text/javascript" src="javascripts/script.js"></script>
 		<script type="text/javascript">
 
 function init(){
@@ -162,7 +163,7 @@ function showForm(num) {
    				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯座標</a></li>
    				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯場景</a></li>
    			</ul><br>
-   			<div class="col-md-6" id="DisplayBlock">
+   			<div class="col-md-6" id="DisplayBlock" ng-controller="manageControl">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
 					<label class="radio-inline">
 						<input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增
