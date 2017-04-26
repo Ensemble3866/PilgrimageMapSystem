@@ -66,9 +66,26 @@ function initMap() {
 					///////////////////////////////////////////////////////
 					///////////////////////處理座標資訊////////////////////
 					///////////////////////////////////////////////////////
+					$("#seceneName").innerHTML;
+					//alert("Name: "+ data.placemark[0].name + "\nWork: "+ data.work[0].c_name);
+					
+					$("#place").html(
+						"<h2>"+data.placemark[0].name+" : "+data.work.length+"</h2>"+
+						"<p>"+data.placemark[0].description+"</p>"
+					);
 
-
-					alert("Name: "+ data.name + "\nWork: "+ data.work[0].c_name);
+					//$("#works").empty();
+					$("#works").append(
+					"<br/><div id='work'>"+
+					"<h3>"+data.work[0].c_name+" / "+data.work[0].j_name+" / "+data.work[0].e_name+"</h3>"+
+					"<p>"+data.work[0].category+"</p>"+
+					"<p>"+data.work[0].introduction+"</p>"+
+					"<div id='pics'></div>"+
+					"</div>"
+					);
+					///////////////////////////////////////////////////////
+					//////////////////////////施工中///////////////////////
+					///////////////////////////////////////////////////////
 				}
 			});
 		});
@@ -121,8 +138,23 @@ function initMap() {
     </script>
     <div id="map" style="height: 80%; width: 100%;"></div>
     <br>
-    <h2>Test</h2>
-
-
+    <!--Introduction-->
+	<div id="intro">
+		<h2>Introduction</h2>
+		<br/>
+		<div id="place">
+			<h2>Where</h2>
+		</div>
+		<br/>
+		<div id="works">
+			<div id="work">
+				<h3>測試 / テスト / Test</h3>
+				<p>類型</p>
+				<p>介紹內容..........</p>
+				<div id='pics'></div>
+			</div>
+		</div>
+	</div>
+	<!--施工中-->
 	</body>
 </html>
