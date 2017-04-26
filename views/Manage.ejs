@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%;">
+<html lang="en" ng-app>
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -38,6 +38,7 @@ p {
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
 		<script type="text/javascript">
 
 function init(){
@@ -49,15 +50,19 @@ function init(){
 		}
 		else{
 			$("#selectEditWork").attr("disabled", true);
+			$("input[name=workJName]").val("");
+			$("input[name=workCName]").val("");
+			$("input[name=workEName]").val("");
+			$("textarea[name=workIntr]").val("");
 		}
 	});
-	$("input[name=rdoScene]").click(function(){
-		if($('input[name=rdoScene]:checked').val() != "add"){
-			$("#selectEditScene").attr("disabled", false);
-			$("#selectEditScene").trigger("change");
+	$("input[name=rdoPlacemark]").click(function(){
+		if($('input[name=rdoPlacemark]:checked').val() != "add"){
+			$("#selectEditPlacemark").attr("disabled", false);
+			$("#selectEditPlacemark").trigger("change");
 		}
 		else{
-			$("#selectEditScene").attr("disabled", true);
+			$("#selectEditPlacemark").attr("disabled", true);
 		}
 	});
 	
@@ -73,38 +78,38 @@ function init(){
 			}
 		});
 	});
-	$("#selectEditScene").change(function(){
-		$.post("/manage/getSceneInfo", {
-			sceneId : $("#selectEditScene").val()
+	$("#selectEditPlacemark").change(function(){
+		$.post("/manage/getPlacemarkInfo", {
+			sceneId : $("#selectEditPlacemark").val()
 		}, function(data, status){
 			if(status=="success"){
 				$("input[name=sceneName]").val(data.name);
 				$("input[name=latNum]").val(data.latitude);
 				$("input[name=lngNum]").val(data.longitude);
-				$("textarea[name=sceneDesc]").val(data.description);
+				$("textarea[name=placemarkDesc]").val(data.description);
 			}
 		});
 	});
 
 	showForm(1);
 	$("#rdoWorkAdd").attr("checked", true);
-	$("#rdoSceneAdd").attr("checked", true);
+	$("#rdoPlacemarkAdd").attr("checked", true);
 
 };
 
 function showForm(num) {
 	switch(num) {
 		case 1: $("#formWork").fadeIn();
+				$("#formPlacemark").hide();
 				$("#formScene").hide();
-				$("#formBuildPlacemark").hide();
 				break;
 		case 2: $("#formWork").hide();
-				$("#formScene").fadeIn();
+				$("#formPlacemark").fadeIn();
 				$("#formBuildPlacemark").hide();
 				break;
 		case 3: $("#formWork").hide();
-				$("#formScene").hide();
-				$("#formBuildPlacemark").fadeIn();
+				$("#formPlacemark").hide();
+				$("#formScene").fadeIn();
 				break;
 	}
 };
@@ -154,8 +159,8 @@ function showForm(num) {
    		<div class="row">
    			<ul class="nav nav-tabs">
    				<li role="presentation" class="active"><a href="javascript:showForm(1)">編輯作品</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯場景</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯座標</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯座標</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯場景</a></li>
    			</ul><br>
    			<div class="col-md-6" id="DisplayBlock">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
@@ -171,7 +176,7 @@ function showForm(num) {
 					<label class="radio-inline" style="width: 200px;">
 						<select name="selectEditWork" id="selectEditWork" class="form-control" disabled>
 						<% for(var index in workList) {%>
-		 				<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
+		 					<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
 		   				<% } %>
 						</select>
 					</label><br><br>
@@ -179,26 +184,24 @@ function showForm(num) {
 			   		<input type="text" class="form-control" name="workJName"><br>
 			   		<label class="control-label" for="workCName">作品名稱（中文）</label>
 			   		<input type="text" class="form-control" name="workCName"><br>
-			   		<label class="control-label" for="workEName">作品名稱（英文）</label>
-			   		<input type="text" class="form-control" name="workEName"><br>
 					<label class="control-label" for="workIntr">簡介</label>
 					<textarea class="form-control" name="workIntr" rows="5"></textarea><br>
 		   			<button type="submit" class="btn btn-default" id="btnSubmitWork">送出</button>
    				</form>
-   				<form role="form" action="/manage/submitScene" method="post" id="formScene">
+   				<form role="form" action="/manage/submitPlacemark" method="post" id="formPlacemark">
    					<label class="radio-inline">
-						<input type="radio" name="rdoScene" id="rdoSceneAdd" value="add">新增
+						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkAdd" value="add">新增
 					</label>
 					<label class="radio-inline">
-						<input type="radio" name="rdoScene" id="rdoSceneEdit" value="edit">編輯
+						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkEdit" value="edit">編輯
 					</label>
 					<label class="radio-inline">
-						<input type="radio" name="rdoScene" id="rdoSceneDel" value="del" disabled>刪除
+						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkDel" value="del" disabled>刪除
 					</label>
 					<label class="radio-inline" style="width: 200px;">
-						<select name="selectEditScene" id="selectEditScene" class="form-control" disabled>
-						<% for(var index in sceneList) {%>
-		 				<option value="<%= sceneList[index]._id %>"><%= sceneList[index].name %></option>
+						<select name="selectEditPlacemark" id="selectEditPlacemark" class="form-control" disabled>
+						<% for(var index in placemarkList) {%>
+		 				<option value="<%= placemarkList[index]._id %>"><%= placemarkList[index].name %></option>
 		   				<% } %>
 						</select>
 					</label><br><br>
@@ -210,25 +213,10 @@ function showForm(num) {
 		   			<input type="text" class="form-control" name="lngNum"><br>
 		   			<label class="control-label" for="sceneDesc">描述</label>
 					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
-	   				<button type="submit" class="btn btn-default" id="btnSubmitScene">送出</button>
-   				</form>
-   				<form role="form" action="/manage/submitPlacemark" method="post" id="formBuildPlacemark">
-		   			<label class="control-label" for="selectWork">選擇作品</label>
-		   			<select class="form-control" name="selectWork">
-		   			<% for(var index in workList) {%>
-		   				<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
-		   			<% } %>
-		   			</select>
-		   			<br>
-		   			<label class="control-label" for="selectScene">選擇景點</label>
-		   			<select class="form-control" name="selectScene">
-		   			<% for(var index in sceneList) {%>
-		   				<option value="<%= sceneList[index]._id %>"><%= sceneList[index].name %></option>
-		   			<% } %>
-		   			</select>
-		   			<br>
 	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出</button>
    				</form>
+				<form role="form" action="#" method="post" id="formScene">
+				</form>
    			</div>
    		</div>
    	</div>

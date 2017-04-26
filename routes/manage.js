@@ -5,7 +5,6 @@ var mongoose = require('mongoose');
 var Works = mongoose.model('works');
 var Scenes = mongoose.model('scenes');
 var Placemarks = mongoose.model('placemarks');
-var CompareImgs = mongoose.model('compareImgs');
 var Users = mongoose.model('users'); 
 
 /* GET /manage page. */
@@ -20,18 +19,10 @@ router.get('/', function(req, res, next) {
 	});
 
 	Works.find({}, function(err, _work){
-		if(err) {
-			console.log("work load fail.");
-			res.send("Server error.");
-			return;
-		}
-		Scenes.find({}, function(err, _scene){
-			if(err) {
-				console.log("scene load fail.");
-				res.send("Server error.");
-				return;
-			}
-			res.render('Manage.ejs', { workList: _work, sceneList: _scene });
+		if(err) return handleError(err);
+		Placemarks.find({}, function(err, _placemark){
+			if(err) return handleError(err);
+			res.render('manage.ejs', { workList: _work, placemarkList: _placemark });
 		});
 	});
 });
@@ -39,21 +30,15 @@ router.get('/', function(req, res, next) {
 /* GET request from Ajax. */
 router.post('/getWorkInfo', function(req, res, next) {
 	Works.findOne({ _id: req.body.workId }).exec(function(err, _work){
-		if(err){
-			console.log("work load fail.");
-			res.send("Server error.");
-		}
+		if(err) return handleError(err);
 		res.send(_work);
 	});
 });
 
-router.post('/getSceneInfo', function(req, res, next) {
-	Scenes.findOne({ _id: req.body.sceneId }).exec(function(err, _scene){
-		if(err){
-			console.log("scene load fail.");
-			res.send("Server error.");
-		}
-		res.send(_scene);
+router.post('/getPlacemarkInfo', function(req, res, next) {
+	Placemarks.findOne({ _id: req.body.workId }).exec(function(err, _placemark){
+		if(err) return handleError(err);
+		res.send(_placemark);
 	});
 });
 
@@ -64,105 +49,81 @@ router.post('/submitWork', function(req, res, next) {
 			var newWork = new Works({
 				j_name: req.body.workJName,
 				c_name: req.body.workCName,
-				e_name: req.body.workEName,
 				introduction: req.body.workIntr,
-				category: "anime",
+				category: "Anime",
 				builder: req.session.curUser,
 				checker: req.session.curUser
 			});
 			newWork.save(function(err){
-				if(err) {
-					console.log(err);
-					return handleError(err);
-				}
+				if(err) return handleError(err);
 			});
 			break;
 		case "edit":
-			Works.update({ id: req.body.SelectEditWork }, {
-				j_name: req.body.workJName,
-				c_name: req.body.workCName,
-				e_name: req.body.workEName,
-				introduction: req.body.workIntr,
-				category: "anime",
-				builder: req.session.curUser,
-				checker: req.session.curUser
-			}, function(err){
-				if(err)
-					console.log("Update work fail.");
+			Works.findOne({ _id: req.body.selectEditWork }).exec(function(err, _work){
+				if(err) return handleError(err);
+				_work.j_name = req.body.workJName;
+				_work.c_name =  req.body.workCName;
+				_work.introduction = req.body.workIntr;
+				_work.category = "Anime";
+				_work.save(function(err){
+					if(err) return handleError(err);
+				});
 			});
 			break;
 		case "del":
-			Works.remove({ id: req.body.SelectEditWork }, function(err){
-				if(err)
-					console.log("Remove work fail.");
+			Works.findOne({ _id: req.body.selectEditWork }).exec(function(err, _work){
+				if(err) return handleError(err);
+				_work.remove(function(err){
+					if(err) return handleError(err);
+				});
 			});
 			break;
 		default:
-			console.log("Something wrong.");
 			break;
 	}
 	res.redirect('/manage');
 });
-
-router.post('/submitScene', function(req, res, next) {
-	switch(req.body.rdoScene){
-		case "add":
-			var newScene = new Scenes({
-				name: req.body.sceneName,
-				latitude: req.body.latNum,
-				longitude: req.body.lngNum,
-				description: req.body.sceneDesc,
-				builder: req.session.curUser,
-				checker: req.session.curUser
-			});
-			newScene.save(function(err){
-				if(err) {
-					console.log(err);
-					return handleError(err);
-				}
-			});
-			break;
-		case "edit":
-			Scenes.update({ id: req.body.SelectEditScene }, {
-				ame: req.body.sceneName,
-				latitude: req.body.latNum,
-				longitude: req.body.lngNum,
-				description: req.body.sceneDesc,
-				builder: req.session.curUser,
-				checker: req.session.curUser
-			}, function(err){
-				if(err)
-					console.log("Update scene fail.");
-			});
-			break;
-		case "del":
-			Works.remove({ id: req.body.SelectEditScene }, function(err){
-				if(err)
-					console.log("Remove scene fail.");
-			});
-			break;
-		default:
-			console.log("Something wrong.");
-			break;
-	}
-	res.redirect('/manage');
-});
-
 
 router.post('/submitPlacemark', function(req, res, next) {
-
-	var newPlacemark = new Placemarks({
-		work: req.body.selectWork,
-		scene: req.body.selectScene,
-		builder: req.session.curUser,
-		checker: req.session.curUser
-	});
-	newPlacemark.save(function(err){
-		if(err) {
-			console.log(err);
-			return handleError(err);
-		}
-	})
+	switch(req.body.rdoPlacemark){
+		case "add":
+			var newPlacemark = new Placemarks({
+				name: req.body.placemarkName,
+				latitude: req.body.latNum,
+				longitude: req.body.lngNum,
+				description: req.body.placemarkDesc,
+				//work: req.body.haveWork,
+				builder: req.session.curUser,
+				checker: req.session.curUser
+			});
+			newPlacemark.save(function(err){
+				if(err) return handleError(err);
+			});
+			break;
+		case "edit":
+			Placemarks.findOne({ _id: req.body.selectEditPlacemark }).exec(function(err, _placemark){
+				if(err) return handleError(err);
+				_placemark.name = req.body.placemarkName;
+				_placemark.latitude = req.body.latNum;
+				_placemark.longitude = req.body.lngNum;
+				_placemark.description = req.body.placemarkDesc;
+				//work: req.body.haveWork,
+				_placemark.save(function(err){
+					if(err) return handleError(err);
+				});
+			});
+			break;
+		case "del":
+			Placemarks.findOne({ _id: req.body.selectEditPlacemark }).exec(function(err, _placemark){
+				if(err) return handleError(err);
+				_placemacrk.remove(function(err){
+					if(err) return handleError(err);
+				});
+			});
+			break;
+		default:
+			break;
+	}
 	res.redirect('/manage');
 });
 
