@@ -107,7 +107,7 @@ router.post('/submitPlacemark', function(req, res, next) {
 				_placemark.latitude = req.body.latNum;
 				_placemark.longitude = req.body.lngNum;
 				_placemark.description = req.body.placemarkDesc;
-				//work: req.body.haveWork,
+				work = req.body.work;
 				_placemark.save(function(err){
 					if(err) return handleError(err);
 				});
