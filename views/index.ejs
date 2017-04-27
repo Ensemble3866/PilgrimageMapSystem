@@ -76,12 +76,25 @@ function initMap() {
 
 					//$("#works").empty();
 					$("#works").append(
-					"<br/><div id='work'>"+
-					"<h3>"+data.work[0].c_name+" / "+data.work[0].j_name+" / "+data.work[0].e_name+"</h3>"+
-					"<p>"+data.work[0].category+"</p>"+
-					"<p>"+data.work[0].introduction+"</p>"+
-					"<div id='pics'></div>"+
-					"</div>"
+						//其中一個作品
+						"<div class='row' id='work'>"+
+							//文字資訊
+							"<div class='col-md-6' id='text'>"+
+								"<h3>"+data.work[0].c_name+" / "+data.work[0].j_name+" / "+data.work[0].e_name+"</h3>"+
+								"<p>"+data.work[0].category+"</p>"+
+								"<p>"+data.work[0].introduction+"</p>"+
+							"</div>"+
+							//圖片資訊
+							"<div class='col-md-6' id='pics'>"+
+								"<div class='row'>"+
+								"<div class='col-md-6' id='pic_orgin'>"+
+									"<img src='https://goo.gl/4mHZjA' alt='test_pic' class='img-responsive img-round' />"+
+								"</div>"+
+								"<div class='col-md-6' id='pic_comparison'>"+
+									"<img src='https://goo.gl/4mHZjA' alt='test_pic' class='img-responsive img-circle' />"+
+								"</div>"+
+							"</div>"+
+						"</div><br/>"
 					);
 					///////////////////////////////////////////////////////
 					//////////////////////////施工中///////////////////////
@@ -139,21 +152,39 @@ function initMap() {
     <div id="map" style="height: 80%; width: 100%;"></div>
     <br>
     <!--Introduction-->
-	<div id="intro">
-		<h2>Introduction</h2>
-		<br/>
-		<div id="place">
+	<div class="container" id="intro">
+		
+		<h2>Introduction</h2><br/>
+		
+		<!--顯示地點資訊-->
+		<div class="page-header" id="place">
 			<h2>Where</h2>
-		</div>
-		<br/>
-		<div id="works">
-			<div id="work">
-				<h3>測試 / テスト / Test</h3>
-				<p>類型</p>
-				<p>介紹內容..........</p>
-				<div id='pics'></div>
+		</div><br/>
+
+		<!--顯示所在地點的所有作品-->
+		<div class="container" id="works">
+			<!--其中一個作品-->
+			<div class="row" id="work">
+				<!--文字資訊-->
+				<div class="col-md-6" id="text">
+					<h3>測試 / テスト / Test</h3>
+					<p>類型</p>
+					<p>介紹內容..........</p>
+				</div>
+				<!--圖片資訊-->
+				<div class="col-md-6" id="pics" style="border:1px solid gray;  border-radius:20px;">
+					<div class="row">
+						<div class="col-md-6" id="pic_orgin">
+							<img src="https://goo.gl/4mHZjA" alt="test_pic" class="img-responsive img-round" />
+						</div>
+						<div class="col-md-6" id="pic_comparison">
+							<img src="https://goo.gl/4mHZjA" alt="test_pic" class="img-responsive img-circle" />
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
+
 	</div>
 	<!--施工中-->
 	</body>
