@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-ap" manageControlApp">
+<html lang="en" ng-app="manageControlApp">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,12 +33,24 @@
 			.invisible {
 			visibility: hidden;
 			}
+			.ng-hide-add, .ng-hide-remove {
+				/* ensure visibility during the transition */
+				display: block !important; /* yes, important */
+			}
+			.cssFade {
+				transition: 0.5s linear all;
+				opacity: 1;
+			}
+			.cssFade.ng-hide {
+				opacity: 0;
+			}
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js"></script>
 		<script type="text/javascript" src="javascripts/script.js"></script>
 		<script type="text/javascript">
 
@@ -91,32 +103,9 @@ function init(){
 			}
 		});
 	});
-
-	showForm(1);
 	$("#rdoWorkAdd").attr("checked", true);
 	$("#rdoPlacemarkAdd").attr("checked", true);
-
 };
-
-function showForm(num) {
-	switch(num) {
-		case 1: $("#formWork").fadeIn();
-				$("#formPlacemark").hide();
-				$("#formScene").hide();
-				break;
-		case 2: $("#formWork").hide();
-				$("#formPlacemark").fadeIn();
-				$("#formBuildPlacemark").hide();
-				break;
-		case 3: $("#formWork").hide();
-				$("#formPlacemark").hide();
-				$("#formScene").fadeIn();
-				break;
-	}
-};
-
-
-
 		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
@@ -125,7 +114,7 @@ function showForm(num) {
 		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	</head>
-	<body onLoad="init();">
+	<body onLoad="init();" ng-controller="manageControl">
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -159,9 +148,9 @@ function showForm(num) {
 	<div class="container">
    		<div class="row">
    			<ul class="nav nav-tabs">
-   				<li role="presentation" class="active"><a href="javascript:showForm(1)">編輯作品</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯座標</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯場景</a></li>
+   				<li role="presentation" class="active"><a ng-click="changeForm('work')">編輯作品</a></li>
+   				<li role="presentation" class="active"><a ng-click="changeForm('placemark')">編輯座標</a></li>
+   				<li role="presentation" class="active"><a ng-click="changeForm('scene')">編輯場景</a></li>
    			</ul><br>
    			<div class="col-md-6" id="DisplayBlock" ng-controller="manageControl">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
@@ -214,7 +203,7 @@ function showForm(num) {
 		   			<input type="text" class="form-control" name="lngNum"><br>
 		   			<label class="control-label" for="sceneDesc">描述</label>
 					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
-	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出1</button>
+	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出</button>
    				</form>
 				<form role="form" action="#" method="post" id="formScene">
 				</form>
