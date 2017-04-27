@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="manageControlApp">
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,25 +33,11 @@
 			.invisible {
 			visibility: hidden;
 			}
-			.ng-hide-add, .ng-hide-remove {
-				/* ensure visibility during the transition */
-				display: block !important; /* yes, important */
-			}
-			.cssFade {
-				transition: 0.5s linear all;
-				opacity: 1;
-			}
-			.cssFade.ng-hide {
-				opacity: 0;
-			}
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js"></script>
-		<script type="text/javascript" src="javascripts/script.js"></script>
 		<script type="text/javascript">
 
 function init(){
@@ -105,6 +91,24 @@ function init(){
 	});
 	$("#rdoWorkAdd").attr("checked", true);
 	$("#rdoPlacemarkAdd").attr("checked", true);
+	showForm(1);
+};
+
+function showForm(num) {
+ 	switch(num) {
+ 		case 1: $("#formWork").fadeIn();
+ 				$("#formPlacemark").hide();
+ 				$("#formScene").hide();
+ 				break;
+ 		case 2: $("#formWork").hide();
+ 				$("#formPlacemark").fadeIn();
+ 				$("#formBuildPlacemark").hide();
+ 				break;
+ 		case 3: $("#formWork").hide();
+ 				$("#formPlacemark").hide();
+ 				$("#formScene").fadeIn();
+ 				break;
+	}
 };
 		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
@@ -114,7 +118,7 @@ function init(){
 		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	</head>
-	<body onLoad="init();" ng-controller="manageControl">
+	<body onLoad="init();">
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -148,11 +152,11 @@ function init(){
 	<div class="container">
    		<div class="row">
    			<ul class="nav nav-tabs">
-   				<li role="presentation" class="active"><a ng-click="changeForm('work')">編輯作品</a></li>
-   				<li role="presentation" class="active"><a ng-click="changeForm('placemark')">編輯座標</a></li>
-   				<li role="presentation" class="active"><a ng-click="changeForm('scene')">編輯場景</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(1)">編輯作品</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯座標</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯場景</a></li>
    			</ul><br>
-   			<div class="col-md-6" id="DisplayBlock" ng-controller="manageControl">
+   			<div class="col-md-6" id="DisplayBlock">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
 					<label class="radio-inline">
 						<input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增
