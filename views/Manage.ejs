@@ -8,9 +8,6 @@
 		<!-- Bootstrap -->
 		<link href="stylesheets/bootstrap.min.css" rel="stylesheet">
 		<style>
-			body {
-				padding-top: 50px;
-			}
 			p { 
 				line-height: 1.7em;
 				margin-after: 0.5em;
@@ -40,34 +37,28 @@
 		<script src="javascripts/bootstrap.min.js"></script>
 		<script type="text/javascript">
 
-function init(){
+works = [];
 
+function init(){
+	//在「編輯作品」中按下新增/編輯/刪除
 	$("input[name=rdoWork]").click(function(){
 		if($('input[name=rdoWork]:checked').val() != "add"){
-			$("#selectEditWork").attr("disabled", false);
-			$("#selectEditWork").trigger("change");
+			$("#sltWork").attr("disabled", false);
+			$("#sltWork").trigger("change");
 		}
 		else{
-			$("#selectEditWork").attr("disabled", true);
+			$("#sltWork").attr("disabled", true);
 			$("input[name=workJName]").val("");
 			$("input[name=workCName]").val("");
 			$("input[name=workEName]").val("");
 			$("textarea[name=workIntr]").val("");
 		}
 	});
-	$("input[name=rdoPlacemark]").click(function(){
-		if($('input[name=rdoPlacemark]:checked').val() != "add"){
-			$("#selectEditPlacemark").attr("disabled", false);
-			$("#selectEditPlacemark").trigger("change");
-		}
-		else{
-			$("#selectEditPlacemark").attr("disabled", true);
-		}
-	});
-	
-	$("#selectEditWork").change(function(){
+
+	//在「編輯作品」中選擇作品（適用於編輯、刪除）
+	$("#sltWork").change(function(){
 		$.post("/manage/getWorkInfo", {
-			workId : $("#selectEditWork").val()
+			workId : $("#sltWork").val()
 		}, function(data, status){
 			if(status=="success"){
 				$("input[name=workJName]").val(data.j_name);
@@ -77,37 +68,97 @@ function init(){
 			}
 		});
 	});
-	$("#selectEditPlacemark").change(function(){
+
+	//在「編輯座標」中按下新增/編輯/刪除
+	$("input[name=rdoPlacemark]").click(function(){
+		if($('input[name=rdoPlacemark]:checked').val() != "add"){
+			$("#sltPlacemark").attr("disabled", false);
+			$("#sltWorkOfPlacemark").attr("disabled", false);
+			$("#sltWorkList").attr("disabled", false);
+			$("#btnAddWorkToPlacemark").attr("disabled", false);
+			$("#btnDelWorkFromPlacemark").attr("disabled", false);
+			$("#sltPlacemark").trigger("change");
+		}
+		else{
+			$("input[name=placemarkName]").val("");
+			$("input[name=latNum]").val("");
+			$("input[name=lngNum]").val("");
+			$("textarea[name=placemarkDesc]").val("");
+			$("#sltPlacemark").attr("disabled", true);
+			$("#sltWorkOfPlacemark").attr("disabled", true);
+			$("#sltWorkList").attr("disabled", true);
+			$("#btnAddWorkToPlacemark option").remove();
+			$("#btnAddWorkToPlacemark").attr("disabled", true);
+			$("#btnDelWorkFromPlacemark").attr("disabled", true);
+		}
+	});
+
+	//在「編輯座標」中選擇座標（適用於編輯、刪除）
+	$("#sltPlacemark").change(function(){
 		$.post("/manage/getPlacemarkInfo", {
-			sceneId : $("#selectEditPlacemark").val()
+			placemarkId : $("#sltPlacemark").val()
 		}, function(data, status){
 			if(status=="success"){
-				$("input[name=sceneName]").val(data.name);
+				$("input[name=placemarkName]").val(data.name);
 				$("input[name=latNum]").val(data.latitude);
 				$("input[name=lngNum]").val(data.longitude);
 				$("textarea[name=placemarkDesc]").val(data.description);
+				$("#sltWorkOfPlacemark option").remove();
+				for(var index in data.work){
+					$("#sltWorkOfPlacemark")
+					.append($("<option></option>")
+					.attr("value", data.work[index]._id)
+					.text(data.work[index].c_name));
+				}
 			}
 		});
 	});
+	//點選「編輯座標」中之加入
+	$("#btnAddWorkToPlacemark").click(function(){
+		$.post("/manage/addWorkToPlacemark", {
+			placemarkId: $("#sltPlacemark").val(),
+			workId: $("#sltWorkList").val()
+		}, function(data, status){
+			if(status == "success"){
+				window.location.reload();
+			}
+		});
+	});
+	//點選「編輯座標」中之刪除
+	$("#btnDelWorkFromPlacemark").click(function(){
+		$.post("/manage/DelWorkFromPlacemark", {
+			placemarkId: $("#sltPlacemark").val(),
+			workId: $("#sltWorkOfPlacemark").val()
+		}, function(data, status){
+			if(status == "success"){
+				window.location.reload();
+			}
+		});
+	});
+
+	//初始設置
 	$("#rdoWorkAdd").attr("checked", true);
 	$("#rdoPlacemarkAdd").attr("checked", true);
-	showForm(1);
+	showForm("Work");
 };
 
-function showForm(num) {
- 	switch(num) {
- 		case 1: $("#formWork").fadeIn();
- 				$("#formPlacemark").hide();
- 				$("#formScene").hide();
- 				break;
- 		case 2: $("#formWork").hide();
- 				$("#formPlacemark").fadeIn();
- 				$("#formBuildPlacemark").hide();
- 				break;
- 		case 3: $("#formWork").hide();
- 				$("#formPlacemark").hide();
- 				$("#formScene").fadeIn();
- 				break;
+function showForm(formKind) {
+ 	switch(formKind) {
+ 		case "Work": 
+		 	$("#formWork").fadeIn();
+ 			$("#formPlacemark").hide();
+ 			$("#formScene").hide();
+ 			break;
+ 		case "Placemark": 
+		 	$("#formWork").hide();
+ 			$("#formPlacemark").fadeIn();
+ 			$("#formBuildPlacemark").hide();
+ 			break;
+ 		case "Scene": 
+			$("#formWork").hide();
+ 			$("#formPlacemark").hide();
+ 			$("#formScene").fadeIn();
+ 			break;
 	}
 };
 		</script>
@@ -119,56 +170,21 @@ function showForm(num) {
 		<![endif]-->
 	</head>
 	<body onLoad="init();">
-	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<a class="navbar-brand" href="#">
-					<span class="glyphicon glyphicon-home"></span>
-				</a>
-				<!--
-				<a class="navbar-brand" href="#">Logo
-					<img alt="Logo" src="#"> 
-				</a>
-				-->
-				<from class="navbar-form navbar-left form-inline" role="search">
-					<div class="form-group">
-						<div class="input-group">
-							<input type="text" class="form-control" style="width: 500px;">
-				   			<span class="input-group-btn">
-				   				<button type="button" class="btn btn-default btn-md">找作品
-				   				<span class="glyphicon glyphicon-search" aria-hidden="true">
-				   				</span></button>
-				   			</span>
-			   			</div>
-		   			</div>
-	  			</from>
-			</div>
-			<ul class="nav navbar-nav navbar-right" id="user_bar">
-				<li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Log in</a></li>
-			</ul>
-		</div>
-	</nav>
-	<br>
-	<div class="container">
+	<div class="container">		
    		<div class="row">
+			<h1>聖地巡禮地圖－後端管理</h1><br>
    			<ul class="nav nav-tabs">
-   				<li role="presentation" class="active"><a href="javascript:showForm(1)">編輯作品</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(2)">編輯座標</a></li>
-   				<li role="presentation" class="active"><a href="javascript:showForm(3)">編輯場景</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm('Work')">編輯作品</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm('Placemark')">編輯座標</a></li>
+   				<li role="presentation" class="active"><a href="javascript:showForm('Scene')">編輯場景</a></li>
    			</ul><br>
    			<div class="col-md-6" id="DisplayBlock">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
-					<label class="radio-inline">
-						<input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增
-					</label>
-					<label class="radio-inline">
-						<input type="radio" name="rdoWork" id="rdoWorkEdit" value="edit">編輯
-					</label>
-					<label class="radio-inline">
-						<input type="radio" name="rdoWork" id="rdoWorkDel" value="del" disabled>刪除
-					</label>
+					<label class="radio-inline"><input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增</label>
+					<label class="radio-inline"><input type="radio" name="rdoWork" id="rdoWorkEdit" value="edit">編輯</label>
+					<label class="radio-inline"><input type="radio" name="rdoWork" id="rdoWorkDel" value="del" disabled>刪除</label>
 					<label class="radio-inline" style="width: 200px;">
-						<select name="selectEditWork" id="selectEditWork" class="form-control" disabled>
+						<select name="sltWork" id="sltWork" class="form-control" disabled>
 						<% for(var index in workList) {%>
 		 					<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
 		   				<% } %>
@@ -183,31 +199,44 @@ function showForm(num) {
 		   			<button type="submit" class="btn btn-default" id="btnSubmitWork">送出</button>
    				</form>
    				<form role="form" action="/manage/submitPlacemark" method="post" id="formPlacemark">
-   					<label class="radio-inline">
-						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkAdd" value="add">新增
-					</label>
-					<label class="radio-inline">
-						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkEdit" value="edit">編輯
-					</label>
-					<label class="radio-inline">
-						<input type="radio" name="rdoPlacemark" id="rdoPlacemarkDel" value="del" disabled>刪除
-					</label>
+   					<label class="radio-inline"><input type="radio" name="rdoPlacemark" id="rdoPlacemarkAdd" value="add">新增</label>
+					<label class="radio-inline"><input type="radio" name="rdoPlacemark" id="rdoPlacemarkEdit" value="edit">編輯</label>
+					<label class="radio-inline"><input type="radio" name="rdoPlacemark" id="rdoPlacemarkDel" value="del" disabled>刪除</label>
 					<label class="radio-inline" style="width: 200px;">
-						<select name="selectEditPlacemark" id="selectEditPlacemark" class="form-control" disabled>
+						<select name="sltPlacemark" id="sltPlacemark" class="form-control" disabled>
 						<% for(var index in placemarkList) {%>
 		 				<option value="<%= placemarkList[index]._id %>"><%= placemarkList[index].name %></option>
 		   				<% } %>
 						</select>
 					</label><br><br>
-		   			<label class="control-label" for="sceneName">景點名稱</label>
-		   			<input type="text" class="form-control" name="sceneName"><br>
-		   			<label class="control-label" for="latNum">緯度(latitude)</label>
-		   			<input type="text" class="form-control" name="latNum"><br>
-		   			<label class="control-label" or="longNum">經度(longitude)</label>
-		   			<input type="text" class="form-control" name="lngNum"><br>
-		   			<label class="control-label" for="sceneDesc">描述</label>
-					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
-	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出</button>
+		   			<label>景點名稱</label><input type="text" class="form-control" name="placemarkName"><br>
+		   			<label>緯度(latitude)</label><input type="text" class="form-control" name="latNum"><br>
+		   			<label>經度(longitude)</label><input type="text" class="form-control" name="lngNum"><br>
+					<label>包含作品（刪除：刪除已有之作品，加入：加入其他作品）</label><br>
+					<div class="row">
+						<div class="col-md-9">
+							<select name="sltWorkOfPlacemark" id="sltWorkOfPlacemark" class="form-control" disabled>
+							</select><br>
+						</div>
+						<div class="col-md-3">
+							<input type="button" value="刪除" class="btn btn-default" id="btnDelWorkFromPlacemark" style="width:100%;" disabled></input>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-9">
+							<select name="sltWorkList" id="sltWorkList" class="form-control" disabled>
+								<% for(var index in workList) {%>
+									<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
+								<% } %>
+							</select><br>
+						</div>
+						<div class="col-md-3">
+							<input type="button"  value="加入" class="btn btn-default" id="btnAddWorkToPlacemark" style="width:100%;" disabled></input>
+						</div>
+					</div>
+		   			<label class="control-label" for="placemarkDesc">描述</label>
+					<textarea class="form-control" name="placemarkDesc" rows="5"></textarea><br>
+	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出</button><br><br>
    				</form>
 				<form role="form" action="#" method="post" id="formScene">
 				</form>

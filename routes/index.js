@@ -9,7 +9,7 @@ var Users = mongoose.model('users');
 
 /* Handle request of homepage. */
 router.get('/', function(req, res, next) {
-	Placemarks.find({}).populate('scene').populate('work').exec(function(err, _placemark){
+	Placemarks.find({}).populate('work').exec(function(err, _placemark){
 		if(err) {
 			console.log("placemark load fail.");
 			res.send("Server error.");
@@ -20,7 +20,7 @@ router.get('/', function(req, res, next) {
 
 /* Handle request of ajax. */
 router.get('/placemark/:placemarkId', function(req, res, next){
-	Placemarks.findOne({ _id: req.params.placemarkId }).populate('scene').populate('work').exec(function(err, _placemark){
+	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').exec(function(err, _placemark){
 		if(err){
 			console.log("scene load fail.");
 			res.send("Server error.");

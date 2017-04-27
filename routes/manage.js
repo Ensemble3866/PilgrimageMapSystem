@@ -36,10 +36,37 @@ router.post('/getWorkInfo', function(req, res, next) {
 });
 
 router.post('/getPlacemarkInfo', function(req, res, next) {
-	Placemarks.findOne({ _id: req.body.workId }).exec(function(err, _placemark){
+	Placemarks.findOne({ _id: req.body.placemarkId }).populate('work').exec(function(err, _placemark){
 		if(err) return handleError(err);
+		console.log(_placemark.work);
 		res.send(_placemark);
 	});
+});
+
+router.post('/addWorkToPlacemark', function(req, res, next){
+	Placemarks.findOne({ _id: req.body.placemarkId }).exec(function(err, _placemark){
+		if(err) return handleError(err);
+		_placemark.work.push(req.body.workId);
+		_placemark.save(function(err){
+			if(err) return handleError(err);
+		});
+	});
+	res.send("success");
+});
+
+router.post('/DelWorkFromPlacemark', function(req, res, next){
+	Placemarks.findOne({ _id: req.body.placemarkId }).exec(function(err, _placemark){
+		if(err) return handleError(err);
+		for(index in _placemark.work){
+			if(_placemark.work[index] == req.body.workId){
+				_placemark.work.splice(index, 1);
+				_placemark.save(function(err){
+					if(err) return handleError(err);
+				});
+			}
+		}
+	});
+	res.send("success");
 });
 
 /* Handle model control */
@@ -59,7 +86,7 @@ router.post('/submitWork', function(req, res, next) {
 			});
 			break;
 		case "edit":
-			Works.findOne({ _id: req.body.selectEditWork }).exec(function(err, _work){
+			Works.findOne({ _id: req.body.sltWork }).exec(function(err, _work){
 				if(err) return handleError(err);
 				_work.j_name = req.body.workJName;
 				_work.c_name =  req.body.workCName;
@@ -71,7 +98,7 @@ router.post('/submitWork', function(req, res, next) {
 			});
 			break;
 		case "del":
-			Works.findOne({ _id: req.body.selectEditWork }).exec(function(err, _work){
+			Works.findOne({ _id: req.body.sltWork }).exec(function(err, _work){
 				if(err) return handleError(err);
 				_work.remove(function(err){
 					if(err) return handleError(err);
@@ -92,7 +119,6 @@ router.post('/submitPlacemark', function(req, res, next) {
 				latitude: req.body.latNum,
 				longitude: req.body.lngNum,
 				description: req.body.placemarkDesc,
-				//work: req.body.haveWork,
 				builder: req.session.curUser,
 				checker: req.session.curUser
 			});
@@ -101,20 +127,19 @@ router.post('/submitPlacemark', function(req, res, next) {
 			});
 			break;
 		case "edit":
-			Placemarks.findOne({ _id: req.body.selectEditPlacemark }).exec(function(err, _placemark){
+			Placemarks.findOne({ _id: req.body.sltPlacemark }).exec(function(err, _placemark){
 				if(err) return handleError(err);
 				_placemark.name = req.body.placemarkName;
 				_placemark.latitude = req.body.latNum;
 				_placemark.longitude = req.body.lngNum;
 				_placemark.description = req.body.placemarkDesc;
-				work = req.body.work;
 				_placemark.save(function(err){
 					if(err) return handleError(err);
 				});
 			});
 			break;
 		case "del":
-			Placemarks.findOne({ _id: req.body.selectEditPlacemark }).exec(function(err, _placemark){
+			Placemarks.findOne({ _id: req.body.sltPlacemark }).exec(function(err, _placemark){
 				if(err) return handleError(err);
 				_placemacrk.remove(function(err){
 					if(err) return handleError(err);
