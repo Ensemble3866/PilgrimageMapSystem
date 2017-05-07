@@ -25,7 +25,9 @@ router.get('/placemark/:placemarkId', function(req, res, next){
 			console.log("scene load fail.");
 			res.send("Server error.");
 		}
-		res.send(_placemark);
+		Scenes.find({ placemark: _placemark._id }).exec(function(err, _scenes){
+			res.send({placemark: _placemark, scenes: _scenes});
+		});
 	});
 });
 

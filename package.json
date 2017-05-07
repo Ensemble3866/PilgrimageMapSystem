@@ -16,7 +16,8 @@
     "cookie-session": "*",
     "mongoose": "*",
     "formidable" : "latest",
-    "angular": "1.6.4"
+    "angular": "1.6.4",
+    "holderjs": "latest"
   },
   "description": "Pilgrimage map system",
   "main": "app.js",

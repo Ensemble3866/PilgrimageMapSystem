@@ -1,6 +1,8 @@
 require('../lib/db');
 var express = require('express');
 var router = express.Router();
+var formidable = require('formidable');
+var fs = require('fs');
 var mongoose = require('mongoose');
 var Works = mongoose.model('works');
 var Scenes = mongoose.model('scenes');
@@ -22,7 +24,9 @@ router.get('/', function(req, res, next) {
 		if(err) return handleError(err);
 		Placemarks.find({}, function(err, _placemark){
 			if(err) return handleError(err);
-			res.render('manage.ejs', { workList: _work, placemarkList: _placemark });
+			Scenes.find({}, function(err, _scene){
+				res.render('manage.ejs', { workList: _work, placemarkList: _placemark, sceneList: _scene });
+			});
 		});
 	});
 });
@@ -38,8 +42,14 @@ router.post('/getWorkInfo', function(req, res, next) {
 router.post('/getPlacemarkInfo', function(req, res, next) {
 	Placemarks.findOne({ _id: req.body.placemarkId }).populate('work').exec(function(err, _placemark){
 		if(err) return handleError(err);
-		console.log(_placemark.work);
 		res.send(_placemark);
+	});
+});
+
+router.post('/getSceneInfo', function(req, res, next) {
+	Scenes.findOne({ _id: req.body.sceneId }).exec(function(err, _scene){
+		if(err) return handleError(err);
+		res.send(_scene);
 	});
 });
 
@@ -150,6 +160,101 @@ router.post('/submitPlacemark', function(req, res, next) {
 			break;
 	}
 	res.redirect('/manage');
+});
+
+router.post('/submitScene', function(req, res, next){
+	var form = new formidable.IncomingForm();
+    form.encoding = 'utf-8';
+    form.uploadDir = 'public/imgs/';
+    form.keepExtensions = true;
+    form.maxFieldsSize = 2 * 1024 * 1024;
+	
+    form.parse(req, function(err, fields, files){
+        if(err){
+        	res.locals.error = err;
+    		res.redirect('/manage');
+        	return;    
+        }
+
+        var wSceneExtName = "";
+		var rSceneExtName = "";
+        switch (files.uploadWorkScene.type) {
+            case 'image/pjpeg':
+            case 'image/jpeg':
+            	wSceneExtName = 'jpg';
+                break;         
+            case 'image/png':
+            case 'image/x-png':
+                wSceneExtName = 'png';
+                break;         
+        }
+		switch (files.uploadRealScene.type) {
+            case 'image/pjpeg':
+            case 'image/jpeg':
+                 rSceneExtName = 'jpg';
+                break;         
+            case 'image/png':
+            case 'image/x-png':
+                 rSceneExtName = 'png';
+                break;         
+        }
+
+        if(wSceneExtName.length == 0 || rSceneExtName.length == 0){
+			res.redirect('/manage');
+            return;                   
+        }
+		var randomName =  Math.floor(Math.random()*100000000000);
+        var wSceneNewName = 'w' + randomName + '.' + wSceneExtName;
+		var rSceneNewName = 'r' + randomName + '.' + rSceneExtName;
+        var w_newPath = form.uploadDir + wSceneNewName;
+		var r_newPath = form.uploadDir + rSceneNewName;
+        fs.renameSync(files.uploadWorkScene.path, w_newPath);
+		fs.renameSync(files.uploadRealScene.path, r_newPath);
+		
+		switch(fields.rdoScene){
+			case "add":
+				var newScene = new Scenes({
+					name: fields.sceneName,
+					description: fields.sceneDesc,
+					workImgUrl: wSceneNewName,
+					realImgUrl: rSceneNewName,
+					placemark: fields.sltSceneOfPlacemark,
+					work: fields.sltSceneOfWork,
+					builder: req.session.curUser,
+					checker: req.session.curUser
+				});
+				newScene.save(function(err){
+					if(err) return handleError(err);
+				});
+				break;
+			case "edit":
+				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
+					if(err) return handleError(err);
+					_scene.name = fields.sceneName;
+					_scene.description = fields.sceneDesc;
+					_scene.workImgUrl = wSceneNewName;
+					_scene.realImgUrl = rSceneNewName;
+					_scene.placemark =  fields.sltSceneOfPlacemark;
+					_scene.work = fields.sltSceneOfWork;
+					_scene.save(function(err){
+						if(err) return handleError(err);
+					});
+				});
+				break;
+			case "del":
+				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
+					if(err) return handleError(err);
+					_scene.remove(function(err){
+						if(err) return handleError(err);
+					});
+				});
+				break;
+			default:
+				break;
+		}
+
+    	res.redirect('/manage'); 
+    });
 });
 
 module.exports = router;

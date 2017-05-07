@@ -66,25 +66,22 @@ function initMap() {
 					///////////////////////////////////////////////////////
 					///////////////////////處理座標資訊////////////////////
 					///////////////////////////////////////////////////////
-					//alert("WAWAWA 忘れ物");
-					//alert("Name: "+ data.name + "\nWork: "+ data.work[0].c_name);
 					
 					$("#place").html(
-						"<h2>"+data.name+" <small><span class='label label-info'>"+data.work.length+" 個作品</span></small></h2>"+
-						"<p>"+data.description+"</p>"
+						"<h2>"+data.placemark.name+" <small><span class='label label-info'>"+data.placemark.work.length+" 個作品</span></small></h2>"+
+						"<p>"+data.placemark.description+"</p>"
 					);
 					
-
 					$("#works").empty();
-					for(var i=0;i<data.work.length;i++) {
+					for(var i=0;i<data.placemark.work.length;i++) {
 						$("#works").append(
 						//其中一個作品
 						"<div class='row' id='work'>"+
 							//文字資訊
 							"<div class='col-md-5' id='text'>"+
-								"<h3>"+data.work[i].c_name+" / "+data.work[i].j_name+"</h3>"+
-								"<p>"+data.work[i].category+"</p>"+
-								"<p>"+data.work[i].introduction+"</p>"+
+								"<h3>"+data.placemark.work[i].c_name+" / "+data.placemark.work[i].j_name+"</h3>"+
+								"<p>"+data.placemark.work[i].category+"</p>"+
+								"<p>"+data.placemark.work[i].introduction+"</p>"+
 							"</div>"+
 							//圖片資訊
 							"<div class='col-md-6 col-md-offset-1' id='pics' style='border:1px solid #F05E1C;  border-radius:20px;'>"+
@@ -156,10 +153,7 @@ function initMap() {
     <div id="map" style="height: 80%; width: 100%;"></div>
     <br>
     <!--Introduction-->
-	<div class="container" id="intro">
-		
-		<h2>Introduction</h2><br/>
-		
+	<div class="container" id="intro">	
 		<!--顯示地點資訊-->
 		<div class="page-header" id="place">
 			<h2>Where</h2>

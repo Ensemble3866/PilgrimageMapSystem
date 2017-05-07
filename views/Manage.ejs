@@ -35,10 +35,8 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
+		<script src="javascripts/holder.min.js"></script>
 		<script type="text/javascript">
-
-works = [];
-
 function init(){
 	//在「編輯作品」中按下新增/編輯/刪除
 	$("input[name=rdoWork]").click(function(){
@@ -113,6 +111,7 @@ function init(){
 			}
 		});
 	});
+
 	//點選「編輯座標」中之加入
 	$("#btnAddWorkToPlacemark").click(function(){
 		$.post("/manage/addWorkToPlacemark", {
@@ -124,6 +123,7 @@ function init(){
 			}
 		});
 	});
+
 	//點選「編輯座標」中之刪除
 	$("#btnDelWorkFromPlacemark").click(function(){
 		$.post("/manage/DelWorkFromPlacemark", {
@@ -136,9 +136,54 @@ function init(){
 		});
 	});
 
+	//在「編輯場景」中按下新增/編輯/刪除
+	$("input[name=rdoScene]").click(function(){
+		if($('input[name=rdoScene]:checked').val() != "add"){
+			$("#sltScene").attr("disabled", false);
+			$("#sltScene").trigger("change");
+		}
+		else{
+			$("input[name=sceneName]").val("");
+			$("textarea[name=sceneDesc]").val("");
+			$("#sltScene").attr("disabled", true);
+			$("#imgWorkScene").removeAttr("src");
+			$("#imgRealScene").removeAttr("src");
+			Holder.setResizeUpdate( $("#imgWorkScene").get(0), true);
+			Holder.setResizeUpdate( $("#imgRealScene").get(0), true);
+		}
+	});
+
+	//在「編輯場景」中選擇場景（適用於編輯、刪除）
+	$("#sltScene").change(function(){
+		$.post("/manage/getSceneInfo", {
+			sceneId : $("#sltScene").val()
+		}, function(data, status){
+			if(status=="success"){
+				$("input[name=sceneName]").val(data.name);
+				$("textarea[name=sceneDesc]").val(data.description);
+				$("#sltSceneOfWork option[value=" + data.work + "]").prop("selected", true);
+				$("#sltSceneOfPlacemark option[value='" + data.placemark + "']").prop("selected", true);
+				$("#imgWorkScene").attr("src", "imgs/" + data.workImgUrl);
+				$("#imgRealScene").attr("src", "imgs/" + data.realImgUrl);
+				Holder.setResizeUpdate( $("#imgWorkScene").get(0), false);
+				Holder.setResizeUpdate( $("#imgRealScene").get(0), false);
+			}
+		});
+	});
+
+	//在「編輯場景」中選擇檔案
+	$("input.uploadImg").change(function(){
+		var extName = $(this).val().substring($(this).val().lastIndexOf('.'),$(this).val().length).toLowerCase();
+		if(extName != ".jpg" && extName != ".png"){
+			alert("錯誤的檔案類型！");
+			$(this).val("");
+		}
+	});
+	
 	//初始設置
-	$("#rdoWorkAdd").attr("checked", true);
-	$("#rdoPlacemarkAdd").attr("checked", true);
+	$("#rdoWorkAdd").prop("checked", true);
+	$("#rdoPlacemarkAdd").prop("checked", true);
+	$("#rdoSceneAdd").prop("checked", true);
 	showForm("Work");
 };
 
@@ -161,6 +206,14 @@ function showForm(formKind) {
  			break;
 	}
 };
+
+function checkFormScene(){
+	if($("#uploadWorkScene").val() == "" || $("#uploadRealScene").val() == ""){
+		alert("作品場景或實際場景不可為空！");
+		return false;
+	}
+	return true;
+}
 		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
@@ -196,7 +249,7 @@ function showForm(formKind) {
 			   		<input type="text" class="form-control" name="workCName"><br>
 					<label class="control-label" for="workIntr">簡介</label>
 					<textarea class="form-control" name="workIntr" rows="5"></textarea><br>
-		   			<button type="submit" class="btn btn-default" id="btnSubmitWork">送出</button>
+		   			<button type="submit" class="btn btn-lg btn-primary" id="btnSubmitWork">送出</button>
    				</form>
    				<form role="form" action="/manage/submitPlacemark" method="post" id="formPlacemark">
    					<label class="radio-inline"><input type="radio" name="rdoPlacemark" id="rdoPlacemarkAdd" value="add">新增</label>
@@ -219,7 +272,7 @@ function showForm(formKind) {
 							</select><br>
 						</div>
 						<div class="col-md-3">
-							<input type="button" value="刪除" class="btn btn-default" id="btnDelWorkFromPlacemark" style="width:100%;" disabled></input>
+							<input type="button" value="刪除" class="btn btn-default" id="btnDelWorkFromPlacemark" style="width:100%;" disabled />
 						</div>
 					</div>
 					<div class="row">
@@ -231,14 +284,52 @@ function showForm(formKind) {
 							</select><br>
 						</div>
 						<div class="col-md-3">
-							<input type="button"  value="加入" class="btn btn-default" id="btnAddWorkToPlacemark" style="width:100%;" disabled></input>
+							<input type="button"  value="加入" class="btn btn-default" id="btnAddWorkToPlacemark" style="width:100%;" disabled />
 						</div>
 					</div>
 		   			<label class="control-label" for="placemarkDesc">描述</label>
 					<textarea class="form-control" name="placemarkDesc" rows="5"></textarea><br>
-	   				<button type="submit" class="btn btn-default" id="btnSubmitPlacemark">送出</button><br><br>
+	   				<button type="submit" class="btn btn-lg btn-primary" id="btnSubmitPlacemark">送出</button><br><br>
    				</form>
-				<form role="form" action="#" method="post" id="formScene">
+				<form role="form" action="/manage/submitScene" method="post" id="formScene" enctype="multipart/form-data">
+					<label class="radio-inline"><input type="radio" name="rdoScene" id="rdoSceneAdd" value="add">新增</label>
+					<label class="radio-inline"><input type="radio" name="rdoScene" id="rdoSceneEdit" value="edit">編輯</label>
+					<label class="radio-inline"><input type="radio" name="rdoScene" id="rdoSceneDel" value="del" disabled>刪除</label>
+					<label class="radio-inline" style="width: 200px;">
+						<select name="sltScene" id="sltScene" class="form-control" disabled>
+							<% for(var index in sceneList) {%>
+									<option value="<%= sceneList[index]._id %>"><%= sceneList[index].name %></option>
+								<% } %>
+						</select>
+					</label><br><br>
+					<label>場景名稱</label><input type="text" class="form-control" name="sceneName"><br>
+					<label class="control-label" for="sceneDesc">描述</label>
+					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
+					<div class="row">
+						<div class="col-md-6">
+							<label class="control-label" for="">作品場景</label>
+							<select name="sltSceneOfWork" id="sltSceneOfWork" class="form-control">
+								<% for(var index in workList) {%>
+								<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
+								<% } %>
+							</select><br>
+							<img id="imgWorkScene" src="holder.js/100px200?text=無圖片" width="100%" class="img-rounded"><br>
+							<input id="uploadWorkScene" name="uploadWorkScene" type="file" class="form-control uploadImg" accept="image/*">
+						</div>
+						<div class="col-md-6">
+							<label class="control-label" for="">實際場景</label>
+							<select name="sltSceneOfPlacemark" id="sltSceneOfPlacemark" class="form-control">
+								<% for(var index in placemarkList) {%>
+								<option value="<%= placemarkList[index]._id %>"><%= placemarkList[index].name %></option>
+								<% } %>
+							</select><br>
+							<img id="imgRealScene" src="holder.js/100px200?text=無圖片" width="100%" class="img-rounded"><br>
+							<input id="uploadRealScene" name="uploadRealScene" type="file" class="form-control uploadImg" accept="image/*"> 
+						</div>
+					</div>
+        			<br>
+					<label>※檔案大小限制為5MB，僅接受png、jpg檔名</label><br><label>※編輯時新圖片會取代舊圖片</label><br><br>
+        			<button id="btnSubmitScene" class="btn btn-lg btn-primary" type="submit">上傳</button><br><br>
 				</form>
    			</div>
    		</div>
