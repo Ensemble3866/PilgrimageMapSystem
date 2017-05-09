@@ -230,6 +230,8 @@ router.post('/submitScene', function(req, res, next){
 			case "edit":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
 					if(err) return handleError(err);
+					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
+					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.name = fields.sceneName;
 					_scene.description = fields.sceneDesc;
 					_scene.workImgUrl = wSceneNewName;
@@ -244,6 +246,8 @@ router.post('/submitScene', function(req, res, next){
 			case "del":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
 					if(err) return handleError(err);
+					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
+					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.remove(function(err){
 						if(err) return handleError(err);
 					});

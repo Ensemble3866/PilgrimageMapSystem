@@ -20,12 +20,12 @@ router.get('/', function(req, res, next) {
 
 /* Handle request of ajax. */
 router.get('/placemark/:placemarkId', function(req, res, next){
-	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').exec(function(err, _placemark){
+	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').sort('work').exec(function(err, _placemark){
 		if(err){
 			console.log("scene load fail.");
 			res.send("Server error.");
 		}
-		Scenes.find({ placemark: _placemark._id }).exec(function(err, _scenes){
+		Scenes.find({ placemark: _placemark._id }).sort('work').exec(function(err, _scenes){
 			res.send({placemark: _placemark, scenes: _scenes});
 		});
 	});
