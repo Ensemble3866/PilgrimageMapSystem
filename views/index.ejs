@@ -4,109 +4,42 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="google-signin-client_id" content="814313851398-vsb7c2m68g7l6h71352h9fs5hqs39fe7.apps.googleusercontent.com"></meta>
 		<title>聖地足跡/來一趟專屬於你的動漫聖地巡禮吧！</title>
 		<!-- Bootstrap -->
 		<link href="stylesheets/bootstrap.min.css" rel="stylesheet">
 		<style>
-body {
-	padding-top: 50px;
-}
-p { 
-	line-height: 1.7em;
-	margin-after: 0.5em;
-	text-align: justify; 
-    text-justify: inter-ideographic;
-	word-break: break-all;
-}
-.center-block {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-.show {
-  display: block !important;
-}
-.hidden {
-  display: none !important;
-  visibility: hidden !important;
-}
-.invisible {
-  visibility: hidden;
-}
+			body {
+				padding-top: 50px;
+			}
+			p { 
+				line-height: 1.7em;
+				margin-after: 0.5em;
+				text-align: justify; 
+				text-justify: inter-ideographic;
+				word-break: break-all;
+			}
+			.center-block {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			.show {
+				display: block !important;
+			}
+			.hidden {
+				display: none !important;
+				visibility: hidden !important;
+			}
+			.invisible {
+				visibility: hidden;
+			}
 
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" ></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
-		<script type="text/javascript">
-var map;
-var markers = [];
-
-function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), {
-    	//mapOptions
-		zoom: 6,
-		center: {lat: 36.2048240, lng: 138.2529240},
-		mapTypeControl: true,	
-		mapTypeControlOptions: {
-			position: google.maps.ControlPosition.LEFT_BOTTOM
-		}
-	});
-		<% for(var index in placemark) {%>
-		var marker = new google.maps.Marker({
-			position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
-			map : map,
-			//icon : 'static/pic/placemark.png',
-			title : '<%= placemark[index].name %>'
-		}).addListener('click', function(){
-			//show placemark infomation
-			$.get("/placemark/"+"<%= placemark[index]._id %>", function(data, status){
-				if(status=="success"){
-					///////////////////////////////////////////////////////
-					///////////////////////處理座標資訊////////////////////
-					///////////////////////////////////////////////////////
-					
-					$("#place").html(
-						"<h2>"+data.placemark.name+" <small><span class='label label-info'>"+data.placemark.work.length+" 個作品</span></small></h2>"+
-						"<p>"+data.placemark.description+"</p>"
-					);
-					
-					$("#works").empty();
-					for(var i=0;i<data.placemark.work.length;i++) {
-						$("#works").append(
-						//其中一個作品
-						"<div class='row' id='work'>"+
-							//文字資訊
-							"<div class='col-md-5' id='text'>"+
-								"<h3>"+data.placemark.work[i].c_name+" / "+data.placemark.work[i].j_name+"</h3>"+
-								"<p>"+data.placemark.work[i].category+"</p>"+
-								"<p>"+data.placemark.work[i].introduction+"</p>"+
-							"</div>"+
-							//圖片資訊
-							"<div class='col-md-6 col-md-offset-1' id='pics' style='border:1px solid #F05E1C;  border-radius:20px;'>"+
-								"<div class='row'>"+
-									"<div class='col-md-6' id='pic_orgin'>"+
-										"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-round' />"+
-									"</div>"+
-									"<div class='col-md-6' id='pic_comparison'>"+
-										"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-circle' />"+
-									"</div>"+
-								"</div>"+
-							"</div>"+
-						"</div><hr/>"
-						);
-					}
-					///////////////////////////////////////////////////////
-					//////////////////////////施工中///////////////////////
-					///////////////////////////////////////////////////////
-				}
-			});
-		});
-		markers["<%= placemark[index].name %>"] = marker;
-	<% } %>
-};
-		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
 		<!--[if lt IE 9]>
@@ -115,9 +48,256 @@ function initMap() {
 		<![endif]-->
 	</head>
 	<body style="height: 100%;">
-	<!-- Modal -->
-	<div class="modal fade" id="NEWSModal" tabindex="-1" role="dialog" aria-labelledby="workName" aria-hidden="true">
-	</div>
+	<script type="text/javascript">
+		// Set varibles will be used
+		var map;
+		var markers = [];
+		var auth2 = {};
+
+		// Set Google Map Function
+		function initMap() {
+			map = new google.maps.Map(document.getElementById('map'), {
+				//mapOptions
+				zoom: 6,
+				center: {lat: 36.2048240, lng: 138.2529240},
+				mapTypeControl: true,	
+				mapTypeControlOptions: {
+					position: google.maps.ControlPosition.LEFT_BOTTOM
+				}
+			});
+				<% for(var index in placemark) {%>
+				var marker = new google.maps.Marker({
+					position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
+					map : map,
+					//icon : 'static/pic/placemark.png',
+					title : '<%= placemark[index].name %>'
+				}).addListener('click', function(){
+					//show placemark infomation
+					$.get("/placemark/"+"<%= placemark[index]._id %>", function(data, status){
+						if(status=="success"){
+							//處理座標資訊
+								
+							$("#place").html(
+								"<h2>"+data.placemark.name+" <small><span class='label label-info'>"+data.placemark.work.length+" 個作品</span></small></h2>"+
+								"<p>"+data.placemark.description+"</p>"
+							);
+							
+							$("#works").empty();
+							for(var i=0;i<data.placemark.work.length;i++) {
+								$("#works").append(
+								//其中一個作品
+								"<div class='row' id='work'>"+
+									//文字資訊
+									"<div class='col-md-5' id='text'>"+
+										"<h3>"+data.placemark.work[i].c_name+" / "+data.placemark.work[i].j_name+"</h3>"+
+										"<p>"+data.placemark.work[i].category+"</p>"+
+										"<p>"+data.placemark.work[i].introduction+"</p>"+
+									"</div>"+
+									//圖片資訊
+									"<div class='col-md-6 col-md-offset-1' id='pics' style='border:1px solid #F05E1C;  border-radius:20px;'>"+
+										"<div class='row'>"+
+											"<div class='col-md-6' id='pic_orgin'>"+
+												"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-round' />"+
+											"</div>"+
+											"<div class='col-md-6' id='pic_comparison'>"+
+												"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-circle' />"+
+											"</div>"+
+										"</div>"+
+									"</div>"+
+								"</div><hr/>"
+								);
+							}
+							///////////////////////////////////////////////////////
+							//////////////////////////施工中///////////////////////
+							///////////////////////////////////////////////////////
+						}
+					});
+				});
+				markers["<%= placemark[index].name %>"] = marker;
+			<% } %>
+		};
+
+		// Begin Facebook SDK Function
+			// This is called with the results from FB.getLoginStatus().
+			function statusChangeCallback(res) {
+
+				if (res.status === 'connected') {
+				// Logged into your app and Facebook.
+					FB.api('/me', function(response) {
+						$.post("/getUserAuth", {
+							userId : res.authResponse.userID,
+							userName : response.name,
+							website : 1
+						}, function(data, status){
+							if(status == "success") setNavbar(data.code, 1);
+						});
+					});
+				}
+				else setNavbar(-1);
+			}
+
+			/* This function is called when someone finishes with the Login Button. 
+			See the onlogin handler attached to it in the sample code below. */
+			function checkLoginState() {
+				FB.getLoginStatus(function(response) {
+					statusChangeCallback(response);
+				});
+			}
+
+			window.fbAsyncInit = function() {
+				FB.init({
+					appId      : '316465528767796',
+					cookie     : true,  // enable cookies to allow the server to access the session
+					xfbml      : true,  // parse social plugins on this page
+					version    : 'v2.8' // use graph api version 2.8
+				});
+				//登入or登出後重新整理網頁		
+				FB.Event.subscribe('auth.login', function(response) {
+					window.location.replace(location.href);
+				});
+
+				FB.Event.subscribe('auth.logout', function(response) {
+					window.location.replace(location.href);
+				});
+
+				FB.getLoginStatus(function(response) {
+					statusChangeCallback(response);
+				});
+			};
+
+			// Load the SDK asynchronously
+			(function(d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) return;
+				js = d.createElement(s); js.id = id;
+				js.src = "//connect.facebook.net/zh_TW/sdk.js";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'facebook-jssdk'));
+		// End Facebook SDK Function
+
+		// Begin Google+ API Function
+			var googleAuth = (function() { return {
+				onSignInCallback: function(authResult) {
+					if (authResult.isSignedIn.get()) {
+						gapi.client.plus.people.get({
+							'userId': 'me'
+						}).then(function(res) {
+							var profile = res.result;
+							$.post("/getUserAuth", {
+								userId : profile.id,
+								userName : profile.displayName,
+								website : 2
+							}, function(data, status){
+								if(status == "success") setNavbar(data.code, 2);
+							});
+							console.log(profile);
+						}, function(err) {
+							console.log(err.result.message);
+						});
+					} else {
+						if (authResult['error'] || authResult.currentUser.get().getAuthResponse() == null) {
+							// There was an error, which means the user is not signed in.
+							// As an example, you can handle by writing to the console:
+							console.log('There was an error: ' + authResult['error']);
+						}
+						setNavbar(-1);
+					}
+				},
+
+				//Calls the OAuth2 endpoint to disconnect the app for the user.
+				disconnect: function() {
+					// Revoke the access token.
+					auth2.disconnect();
+				},
+				
+				// Gets and renders the currently signed in user's profile data.
+			};})();
+
+			// Handler for when the sign-in state changes.
+			var updateSignIn = function() {
+				if (auth2.isSignedIn.get()) {
+					console.log('signed in');
+					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+				}else{
+					console.log('signed out');
+					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+				}
+			}
+
+			// This method sets up the sign-in listener after the client library loads.
+			function startApp() {
+				gapi.load('auth2', function() {
+					gapi.client.load('plus','v1').then(function() {
+					gapi.signin2.render('signin-button', {
+						scope: 'https://www.googleapis.com/auth/plus.login',
+						fetch_basic_profile: false });
+					gapi.auth2.init({fetch_basic_profile: false,
+						scope:'https://www.googleapis.com/auth/plus.login'}).then(
+							function (){
+							auth2 = gapi.auth2.getAuthInstance();
+							auth2.isSignedIn.listen(updateSignIn);
+							auth2.then(updateSignIn);
+						});
+					});
+				});
+			}
+		// END Google+ API Function
+
+		// Begin JQuery control Function
+			$(document).ready(function() {
+				$("#btnGdisconnect").click(googleAuth.disconnect);
+				$("#btnSearchWork").click(function(){
+					//Filter placemark
+					
+				 });
+			});
+			
+			function setNavbar(authCode, authKind = -1){
+				$("li.navbar_li").addClass("hidden");
+				switch(authCode){
+					case -1:
+						$("#fbConnect").removeClass("hidden");
+						$("#gConnect").removeClass("hidden");
+						break;
+					case 0:
+						$("#btnManagePage").removeClass("hidden");
+						$("#btnUploadScene").removeClass("hidden");
+						$("#btnTargetScene").removeClass("hidden");
+						$("#btnManageAuth").removeClass("hidden");
+						break;
+					case 1:
+						$("#btnManagePage").removeClass("hidden");
+						$("#btnUploadScene").removeClass("hidden");
+						$("#btnTargetScene").removeClass("hidden");
+						break;
+					case 2:
+						$("#btnUploadScene").removeClass("hidden");
+						$("#btnTargetScene").removeClass("hidden");
+						break;
+					default:
+						break;
+				}
+				if(authCode >= 0){
+					switch(authKind){
+						case 1:
+							$("#fbConnect").removeClass("hidden");
+							break;
+						case 2:
+							$("#gSignOut").removeClass("hidden");
+							$("#gDisconnect").removeClass("hidden");
+							break;
+						default:
+							break;
+					}
+				}
+			};
+		// End JQuery control Function
+
+	</script>
+	<script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0&callback=initMap">
+    </script>
+	<script src="https://apis.google.com/js/client:platform.js?onload=startApp"></script>
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -129,27 +309,40 @@ function initMap() {
 					<img alt="Logo" src="#"> 
 				</a>
 				-->
-				<from class="navbar-form navbar-left form-inline" role="search">
+				<from class="navbar-form navbar-left form-inline" role="form" action="/" method="post" id="search">
 					<div class="form-group">
 						<div class="input-group">
-							<input type="text" class="form-control" style="width: 500px;">
+							<input type="text" class="form-control" name="keyword" style="width: 500px;">
 				   			<span class="input-group-btn">
-				   				<button type="button" class="btn btn-default btn-md">找作品
-				   				<span class="glyphicon glyphicon-search" aria-hidden="true">
-				   				</span></button>
+				   				<button type="submit" class="btn btn-default btn-md" id="btnSearchWork">找作品
+				   					<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+								</button>
 				   			</span>
 			   			</div>
 		   			</div>
 	  			</from>
 			</div>
 			<ul class="nav navbar-nav navbar-right" id="user_bar">
-				<li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Log in</a></li>
+				<li id="btnTargetScene" class="hidden navbar_li"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
+				<li id="btnUploadScene" class="hidden navbar_li"><a href="#"><span class="glyphicon glyphicon-cloud-upload"></span> 上傳景點</a></li>
+				<li id="btnManagePage" class="hidden navbar_li"><a href="/manage"><span class="glyphicon glyphicon-list-alt"></span> 管理頁面</a></li>
+				<li id="btnManageAuth" class="hidden navbar_li"><a href="#"><span class="glyphicon glyphicon-eye-open"></span> 管理權限</a></li>
+				<li id="fbConnect" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 10px;">
+					<div class="fb-login-button" data-max-rows="1" data-size="medium" data-button-type="login_with"
+						 data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="false"></div>
+				</li>
+				<li id="gConnect" class="hidden navbar_li" style="padding-top: 6px; padding-left: 10px; padding-right: 20px;">
+					<div id="signin-button"></div>
+				</li>
+				<li id="gSignOut" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 10px;">
+					<button class="btn btn-default btn-sm" id="btnGsignOut" onclick="auth2.signOut()">登出</button>
+				</li>
+				<li id="gDisconnect" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 20px;">
+					<button class="btn btn-default btn-sm" id="btnGdisconnect" >完全登出</button>
+				</li>
 			</ul>
 		</div>
 	</nav>
-	<script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0&callback=initMap">
-    </script>
     <div id="map" style="height: 80%; width: 100%;"></div>
     <br>
     <!--Introduction-->

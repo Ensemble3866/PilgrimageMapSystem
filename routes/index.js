@@ -9,12 +9,34 @@ var Users = mongoose.model('users');
 
 /* Handle request of homepage. */
 router.get('/', function(req, res, next) {
+	
 	Placemarks.find({}).populate('work').exec(function(err, _placemark){
 		if(err) {
 			console.log("placemark load fail.");
 			res.send("Server error.");
 		}
+		req.session.auth = 3;
 		res.render('index.ejs', { placemark: _placemark });
+	});
+});
+
+router.post('/getUserAuth', function(req, res, next){
+	Users.findOne({ $and:[ { accountKey : req.body.userId }, { accountKind : req.body.website } ]}).exec(function(err, _user){
+		if(err) return handleError(err);
+		if(_user == null){
+			var newUser = new Users({
+				name : req.body.userName,
+				accountKey : req.body.userId,
+				accountKind : req.body.website,
+				authLevel : 2
+			});
+			newUser.save(function(err){
+				if(err) return handleError(err);
+			});
+			req.session.auth = 2;
+		}
+		else req.session.auth = _user.authLevel;
+		res.send({code : req.session.auth});
 	});
 });
 
