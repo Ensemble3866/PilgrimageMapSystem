@@ -65,13 +65,18 @@
 					position: google.maps.ControlPosition.LEFT_BOTTOM
 				}
 			});
-				<% for(var index in placemark) {%>
+			<% for(var index in placemark) {%>
 				var marker = new google.maps.Marker({
 					position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
 					map : map,
 					//icon : 'static/pic/placemark.png',
+					label : {
+						text :'<% for(var i in placemark[index].work) {%><%=placemark[index].work[i].c_name %><%=placemark[index].work[i].j_name %> <% } %>', 
+						fontSize :'0px'
+					},
 					title : '<%= placemark[index].name %>'
-				}).addListener('click', function(){
+				});
+				marker.addListener('click', function(){
 					//show placemark infomation
 					$.get("/placemark/"+"<%= placemark[index]._id %>", function(data, status){
 						if(status=="success"){
@@ -113,7 +118,7 @@
 						}
 					});
 				});
-				markers["<%= placemark[index].name %>"] = marker;
+				markers.push(marker);
 			<% } %>
 		};
 
@@ -246,10 +251,21 @@
 		// Begin JQuery control Function
 			$(document).ready(function() {
 				$("#btnGdisconnect").click(googleAuth.disconnect);
-				$("#btnSearchWork").click(function(){
-					//Filter placemark
-					
-				 });
+				$("#btnFilterWork").click(function(){
+					for (var i = 0; i < markers.length; i++) {
+						if(markers[i].getLabel().text.match($("#keyword").val()) == null){
+							markers[i].setMap(null);
+						}
+						else{
+							markers[i].setMap(map);
+						} 
+       				}
+				});
+				$("#keyword").keydown(function(event){
+    				if( event.which == 13 ) {
+						$("#btnFilterWork").trigger("click");
+    				}
+				});
 			});
 			
 			function setNavbar(authCode, authKind = -1){
@@ -291,6 +307,7 @@
 					}
 				}
 			};
+
 		// End JQuery control Function
 
 	</script>
@@ -312,9 +329,9 @@
 				<from class="navbar-form navbar-left form-inline" role="form" action="/" method="post" id="search">
 					<div class="form-group">
 						<div class="input-group">
-							<input type="text" class="form-control" name="keyword" style="width: 500px;">
+							<input type="text" class="form-control" id="keyword" style="width: 500px;">
 				   			<span class="input-group-btn">
-				   				<button type="submit" class="btn btn-default btn-md" id="btnSearchWork">找作品
+				   				<button type="submit" class="btn btn-default btn-md" id="btnFilterWork">找作品
 				   					<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 								</button>
 				   			</span>
