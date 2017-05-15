@@ -197,7 +197,7 @@ function showForm(formKind) {
  		case "Placemark": 
 		 	$("#formWork").hide();
  			$("#formPlacemark").fadeIn();
- 			$("#formBuildPlacemark").hide();
+ 			$("#formScene").hide();
  			break;
  		case "Scene": 
 			$("#formWork").hide();
@@ -307,7 +307,7 @@ function checkFormScene(){
 					<textarea class="form-control" name="sceneDesc" rows="5"></textarea><br>
 					<div class="row">
 						<div class="col-md-6">
-							<label class="control-label" for="">作品場景</label>
+							<label class="control-label" for="">出現作品</label>
 							<select name="sltSceneOfWork" id="sltSceneOfWork" class="form-control">
 								<% for(var index in workList) {%>
 								<option value="<%= workList[index]._id %>"><%= workList[index].c_name %></option>
@@ -317,7 +317,7 @@ function checkFormScene(){
 							<input id="uploadWorkScene" name="uploadWorkScene" type="file" class="form-control uploadImg" accept="image/*">
 						</div>
 						<div class="col-md-6">
-							<label class="control-label" for="">實際場景</label>
+							<label class="control-label" for="">實際座標</label>
 							<select name="sltSceneOfPlacemark" id="sltSceneOfPlacemark" class="form-control">
 								<% for(var index in placemarkList) {%>
 								<option value="<%= placemarkList[index]._id %>"><%= placemarkList[index].name %></option>

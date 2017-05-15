@@ -17,9 +17,9 @@ router.get('/', function(req, res, next) {
 		res.end();
 	}
 	Works.find({}, function(err, _work){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		Placemarks.find({}, function(err, _placemark){
-			if(err) return handleError(err);
+			if(err) res.status(500).send(err);
 			Scenes.find({}, function(err, _scene){
 				res.render('manage.ejs', { workList: _work, placemarkList: _placemark, sceneList: _scene });
 			});
@@ -30,31 +30,31 @@ router.get('/', function(req, res, next) {
 /* GET request from Ajax. */
 router.post('/getWorkInfo', function(req, res, next) {
 	Works.findOne({ _id: req.body.workId }).exec(function(err, _work){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		res.send(_work);
 	});
 });
 
 router.post('/getPlacemarkInfo', function(req, res, next) {
 	Placemarks.findOne({ _id: req.body.placemarkId }).populate('work').exec(function(err, _placemark){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		res.send(_placemark);
 	});
 });
 
 router.post('/getSceneInfo', function(req, res, next) {
 	Scenes.findOne({ _id: req.body.sceneId }).exec(function(err, _scene){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		res.send(_scene);
 	});
 });
 
 router.post('/addWorkToPlacemark', function(req, res, next){
 	Placemarks.findOne({ _id: req.body.placemarkId }).exec(function(err, _placemark){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		_placemark.work.push(req.body.workId);
 		_placemark.save(function(err){
-			if(err) return handleError(err);
+			if(err) res.status(500).send(err);
 		});
 	});
 	res.send("success");
@@ -62,12 +62,12 @@ router.post('/addWorkToPlacemark', function(req, res, next){
 
 router.post('/DelWorkFromPlacemark', function(req, res, next){
 	Placemarks.findOne({ _id: req.body.placemarkId }).exec(function(err, _placemark){
-		if(err) return handleError(err);
+		if(err) res.status(500).send(err);
 		for(index in _placemark.work){
 			if(_placemark.work[index] == req.body.workId){
 				_placemark.work.splice(index, 1);
 				_placemark.save(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 			}
 		}
@@ -88,26 +88,26 @@ router.post('/submitWork', function(req, res, next) {
 				checker: req.session.curUser
 			});
 			newWork.save(function(err){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 			});
 			break;
 		case "edit":
 			Works.findOne({ _id: req.body.sltWork }).exec(function(err, _work){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 				_work.j_name = req.body.workJName;
 				_work.c_name =  req.body.workCName;
 				_work.introduction = req.body.workIntr;
 				_work.category = "Anime";
 				_work.save(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 			});
 			break;
 		case "del":
 			Works.findOne({ _id: req.body.sltWork }).exec(function(err, _work){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 				_work.remove(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 			});
 			break;
@@ -129,26 +129,26 @@ router.post('/submitPlacemark', function(req, res, next) {
 				checker: req.session.curUser
 			});
 			newPlacemark.save(function(err){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 			});
 			break;
 		case "edit":
 			Placemarks.findOne({ _id: req.body.sltPlacemark }).exec(function(err, _placemark){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 				_placemark.name = req.body.placemarkName;
 				_placemark.latitude = req.body.latNum;
 				_placemark.longitude = req.body.lngNum;
 				_placemark.description = req.body.placemarkDesc;
 				_placemark.save(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 			});
 			break;
 		case "del":
 			Placemarks.findOne({ _id: req.body.sltPlacemark }).exec(function(err, _placemark){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 				_placemacrk.remove(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 			});
 			break;
@@ -220,12 +220,12 @@ router.post('/submitScene', function(req, res, next){
 					checker: req.session.curUser
 				});
 				newScene.save(function(err){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 				});
 				break;
 			case "edit":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
 					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.name = fields.sceneName;
@@ -235,17 +235,17 @@ router.post('/submitScene', function(req, res, next){
 					_scene.placemark =  fields.sltSceneOfPlacemark;
 					_scene.work = fields.sltSceneOfWork;
 					_scene.save(function(err){
-						if(err) return handleError(err);
+						if(err) res.status(500).send(err);
 					});
 				});
 				break;
 			case "del":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
-					if(err) return handleError(err);
+					if(err) res.status(500).send(err);
 					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
 					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.remove(function(err){
-						if(err) return handleError(err);
+						if(err) res.status(500).send(err);
 					});
 				});
 				break;
