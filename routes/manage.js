@@ -12,14 +12,10 @@ var Users = mongoose.model('users');
 /* GET /manage page. */
 router.get('/', function(req, res, next) {
 	//set testUser
-	Users.findOne({name:"ensemble3866"}, function(err, _user){
-		if(err) {
-			console.log("user load fail.");
-			res.send("Server error.");
-		}
-		req.session.curUser = _user._id;
-	});
-
+	if(req.session.auth > 1){
+		res.redirect('/');
+		res.end();
+	}
 	Works.find({}, function(err, _work){
 		if(err) return handleError(err);
 		Placemarks.find({}, function(err, _placemark){
@@ -230,6 +226,8 @@ router.post('/submitScene', function(req, res, next){
 			case "edit":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
 					if(err) return handleError(err);
+					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
+					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.name = fields.sceneName;
 					_scene.description = fields.sceneDesc;
 					_scene.workImgUrl = wSceneNewName;
@@ -244,6 +242,8 @@ router.post('/submitScene', function(req, res, next){
 			case "del":
 				Scenes.findOne({ _id: fields.sltScene }).exec(function(err, _scene){
 					if(err) return handleError(err);
+					fs.unlinkSync("public/imgs/" + _scene.workImgUrl);
+					fs.unlinkSync("public/imgs/" + _scene.realImgUrl);
 					_scene.remove(function(err){
 						if(err) return handleError(err);
 					});

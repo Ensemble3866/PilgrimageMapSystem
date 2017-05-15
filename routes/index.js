@@ -9,23 +9,45 @@ var Users = mongoose.model('users');
 
 /* Handle request of homepage. */
 router.get('/', function(req, res, next) {
+	
 	Placemarks.find({}).populate('work').exec(function(err, _placemark){
 		if(err) {
 			console.log("placemark load fail.");
 			res.send("Server error.");
 		}
+		req.session.auth = 3;
 		res.render('index.ejs', { placemark: _placemark });
+	});
+});
+
+router.post('/getUserAuth', function(req, res, next){
+	Users.findOne({ $and:[ { accountKey : req.body.userId }, { accountKind : req.body.website } ]}).exec(function(err, _user){
+		if(err) return handleError(err);
+		if(_user == null){
+			var newUser = new Users({
+				name : req.body.userName,
+				accountKey : req.body.userId,
+				accountKind : req.body.website,
+				authLevel : 2
+			});
+			newUser.save(function(err){
+				if(err) return handleError(err);
+			});
+			req.session.auth = 2;
+		}
+		else req.session.auth = _user.authLevel;
+		res.send({code : req.session.auth});
 	});
 });
 
 /* Handle request of ajax. */
 router.get('/placemark/:placemarkId', function(req, res, next){
-	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').exec(function(err, _placemark){
+	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').sort('work').exec(function(err, _placemark){
 		if(err){
 			console.log("scene load fail.");
 			res.send("Server error.");
 		}
-		Scenes.find({ placemark: _placemark._id }).exec(function(err, _scenes){
+		Scenes.find({ placemark: _placemark._id }).sort('work').exec(function(err, _scenes){
 			res.send({placemark: _placemark, scenes: _scenes});
 		});
 	});
