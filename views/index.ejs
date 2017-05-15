@@ -37,9 +37,39 @@
 
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
-		 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" ></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" ></script>
+		<!-- jQuery tmpl 模板功能 -->
+		<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
+		<!--work模板-->
+		<script  type="text/x-jquery-tmpl" id="tmpl_work">
+			<!--其中一個作品-->
+			<div class="row" id="work">
+				<!--文字資訊-->
+				<div class="col-md-5" id="text">
+					<h3>${name}</h3>
+					<p>${category}</p>
+					<p>${intro}</p>
+				</div>
+				<!--圖片資訊-->
+				<div class='col-md-6 col-md-offset-1' id='work${workId}_pics' style='border:1px solid #F05E1C;  border-radius:20px;'>
+					<br/>
+				</div>
+			</div>
+			<hr/>
+		</script>
+		<!--work中的pic模板-->
+		<script  type="text/x-jquery-tmpl" id="tmpl_work_pic">
+			<div class='row'>
+				<div class='col-md-6' id='pic_orgin'>
+					<img src=${workImgUrl} alt='test_pic_anime' class='img-responsive img-thumbnail' title='${sceneName} (動場場景)' />
+				</div>
+				<div class='col-md-6' id='pic_comparison'>
+					<img src=${realImgUrl} alt='test_pic_real' class='img-responsive img-thumbnail' title='${sceneName} (現實場景)' />
+				</div>
+			</div>
+		</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
 		<!--[if lt IE 9]>
@@ -80,41 +110,40 @@
 					//show placemark infomation
 					$.get("/placemark/"+"<%= placemark[index]._id %>", function(data, status){
 						if(status=="success"){
-							//處理座標資訊
-								
+							var sceneCount=0;
+							
+							//座標資訊	
 							$("#place").html(
 								"<h2>"+data.placemark.name+" <small><span class='label label-info'>"+data.placemark.work.length+" 個作品</span></small></h2>"+
 								"<p>"+data.placemark.description+"</p>"
 							);
-							
+							//清空區塊
 							$("#works").empty();
-							for(var i=0;i<data.placemark.work.length;i++) {
-								$("#works").append(
-								//其中一個作品
-								"<div class='row' id='work'>"+
-									//文字資訊
-									"<div class='col-md-5' id='text'>"+
-										"<h3>"+data.placemark.work[i].c_name+" / "+data.placemark.work[i].j_name+"</h3>"+
-										"<p>"+data.placemark.work[i].category+"</p>"+
-										"<p>"+data.placemark.work[i].introduction+"</p>"+
-									"</div>"+
-									//圖片資訊
-									"<div class='col-md-6 col-md-offset-1' id='pics' style='border:1px solid #F05E1C;  border-radius:20px;'>"+
-										"<div class='row'>"+
-											"<div class='col-md-6' id='pic_orgin'>"+
-												"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-round' />"+
-											"</div>"+
-											"<div class='col-md-6' id='pic_comparison'>"+
-												"<img src='http://i.imgur.com/bqs2qym.jpg' alt='test_pic' class='img-responsive img-circle' />"+
-											"</div>"+
-										"</div>"+
-									"</div>"+
-								"</div><hr/>"
-								);
+							//填上找到的所有作品資料
+							for(var i in data.placemark.work) {
+								//文字部分
+								var work=[{
+								name:data.placemark.work[i].c_name+" / "+data.placemark.work[i].j_name,
+								category:data.placemark.work[i].category,
+								intro:data.placemark.work[i].introduction,
+								workId:i,
+								}];
+								$( "#tmpl_work" ).tmpl( work ) .appendTo( "#works" ); 
+								//圖片部分
+								while(data.scenes[sceneCount].work==data.placemark.work[i]._id) {
+									var pic=[{
+									workImgUrl:"imgs/"+data.scenes[sceneCount].workImgUrl,
+									realImgUrl:"imgs/"+data.scenes[sceneCount].realImgUrl,
+									sceneName:data.scenes[sceneCount].name
+									}];
+									$( "#tmpl_work_pic" ).tmpl( pic ) .appendTo( "#work"+i+"_pics" ); 
+									sceneCount++;
+									if(data.scenes[sceneCount].work==data.placemark.work[i]._id) $("#work"+i+"_pics").append("<hr/ style='border-color:#A35E47;'>");
+									else $("#work"+i+"_pics").append("<br/>");
+									if(sceneCount>=data.scenes.length) break;
+								};
 							}
-							///////////////////////////////////////////////////////
-							//////////////////////////施工中///////////////////////
-							///////////////////////////////////////////////////////
+							//上區施工中
 						}
 					});
 				});
