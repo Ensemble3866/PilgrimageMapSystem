@@ -34,8 +34,12 @@ router.post('/getUserAuth', function(req, res, next){
 				if(err) return handleError(err);
 			});
 			req.session.auth = 2;
+			req.session.curUser = newUser._id;
 		}
-		else req.session.auth = _user.authLevel;
+		else {
+			req.session.auth = _user.authLevel;
+			req.session.curUser = _user._id;
+		}
 		res.send({code : req.session.auth});
 	});
 });

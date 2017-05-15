@@ -158,11 +158,11 @@
 				});
 				//登入or登出後重新整理網頁		
 				FB.Event.subscribe('auth.login', function(response) {
-					window.location.replace(location.href);
+					statusChangeCallback(response);
 				});
 
 				FB.Event.subscribe('auth.logout', function(response) {
-					window.location.replace(location.href);
+					statusChangeCallback(response);
 				});
 
 				FB.getLoginStatus(function(response) {
