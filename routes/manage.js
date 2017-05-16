@@ -11,7 +11,6 @@ var Users = mongoose.model('users');
 
 /* GET /manage page. */
 router.get('/', function(req, res, next) {
-	//set testUser
 	if(req.session.auth > 1){
 		res.redirect('/');
 		res.end();
