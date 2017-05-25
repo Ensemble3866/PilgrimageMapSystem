@@ -6,6 +6,7 @@ var Works = mongoose.model('works');
 var Scenes = mongoose.model('scenes');
 var Placemarks = mongoose.model('placemarks');
 var Users = mongoose.model('users');
+var extArticles = mongoose.model('extArticles');
 
 /* Handle request of homepage. */
 router.get('/', function(req, res, next) {
@@ -20,7 +21,7 @@ router.get('/', function(req, res, next) {
 	});
 });
 
-router.post('/getUserAuth', function(req, res, next){
+router.post('/userAuth', function(req, res, next){
 	Users.findOne({ $and:[ { accountKey : req.body.userId }, { accountKind : req.body.website } ]}).exec(function(err, _user){
 		if(err) return handleError(err);
 		if(_user == null){

@@ -76,6 +76,7 @@ function init(){
 			$("#btnAddWorkToPlacemark").attr("disabled", false);
 			$("#btnDelWorkFromPlacemark").attr("disabled", false);
 			$("#sltPlacemark").trigger("change");
+			$("#divExtArticle").fadeIn();
 		}
 		else{
 			$("input[name=placemarkName]").val("");
@@ -88,6 +89,7 @@ function init(){
 			$("#btnAddWorkToPlacemark option").remove();
 			$("#btnAddWorkToPlacemark").attr("disabled", true);
 			$("#btnDelWorkFromPlacemark").attr("disabled", true);
+			$("#divExtArticle").fadeOut();
 		}
 	});
 
@@ -231,7 +233,7 @@ function checkFormScene(){
    				<li role="presentation" class="active"><a href="javascript:showForm('Placemark')">編輯座標</a></li>
    				<li role="presentation" class="active"><a href="javascript:showForm('Scene')">編輯場景</a></li>
    			</ul><br>
-   			<div class="col-md-6" id="DisplayBlock">
+   			<div class="col-md-6">
    				<form role="form" action="/manage/submitWork" method="post" id="formWork">
 					<label class="radio-inline"><input type="radio" name="rdoWork" id="rdoWorkAdd" value="add">新增</label>
 					<label class="radio-inline"><input type="radio" name="rdoWork" id="rdoWorkEdit" value="edit">編輯</label>
@@ -332,6 +334,11 @@ function checkFormScene(){
         			<button id="btnSubmitScene" class="btn btn-lg btn-primary" type="submit">上傳</button><br><br>
 				</form>
    			</div>
+			<div class="col-md-6">
+				<div class"row" id="divExtArticle" hidden>
+					<label>部落格</label>
+				</div>
+			</div>
    		</div>
    	</div>
 	</body>

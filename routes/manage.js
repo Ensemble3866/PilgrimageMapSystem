@@ -8,6 +8,7 @@ var Works = mongoose.model('works');
 var Scenes = mongoose.model('scenes');
 var Placemarks = mongoose.model('placemarks');
 var Users = mongoose.model('users'); 
+var extArticles = mongoose.model('extArticles');
 
 /* GET /manage page. */
 router.get('/', function(req, res, next) {

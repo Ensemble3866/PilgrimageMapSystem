@@ -149,199 +149,149 @@
 				});
 				markers.push(marker);
 			<% } %>
+			google.maps.event.addDomListener(window, "load", initMap);
+		};
+		
+		//Facebook SDK init
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId      : '316465528767796',
+				cookie     : true,  // enable cookies to allow the server to access the session
+				xfbml      : true,  // parse social plugins on this page
+				version    : 'v2.8' // use graph api version 2.8
+			});
 		};
 
-		// Begin Facebook SDK Function
-			// This is called with the results from FB.getLoginStatus().
-			function statusChangeCallback(res) {
-
-				if (res.status === 'connected') {
-				// Logged into your app and Facebook.
-					FB.api('/me', function(response) {
-						$.post("/getUserAuth", {
-							userId : res.authResponse.userID,
-							userName : response.name,
-							website : 1
-						}, function(data, status){
-							if(status == "success") setNavbar(data.code, 1);
-						});
-					});
-				}
-				else setNavbar(-1);
-			}
-
-			/* This function is called when someone finishes with the Login Button. 
-			See the onlogin handler attached to it in the sample code below. */
-			function checkLoginState() {
-				FB.getLoginStatus(function(response) {
-					statusChangeCallback(response);
-				});
-			}
-
-			window.fbAsyncInit = function() {
-				FB.init({
-					appId      : '316465528767796',
-					cookie     : true,  // enable cookies to allow the server to access the session
-					xfbml      : true,  // parse social plugins on this page
-					version    : 'v2.8' // use graph api version 2.8
-				});
-				//登入or登出後重新整理網頁		
-				FB.Event.subscribe('auth.login', function(response) {
-					statusChangeCallback(response);
-				});
-
-				FB.Event.subscribe('auth.logout', function(response) {
-					statusChangeCallback(response);
-				});
-
-				FB.getLoginStatus(function(response) {
-					statusChangeCallback(response);
-				});
-			};
-
-			// Load the SDK asynchronously
-			(function(d, s, id) {
-				var js, fjs = d.getElementsByTagName(s)[0];
-				if (d.getElementById(id)) return;
-				js = d.createElement(s); js.id = id;
-				js.src = "//connect.facebook.net/zh_TW/sdk.js";
-				fjs.parentNode.insertBefore(js, fjs);
-			}(document, 'script', 'facebook-jssdk'));
-		// End Facebook SDK Function
-
+		// Load the SDK asynchronously
+		(function(d, s, id) {
+			var js, fjs = d.getElementsByTagName(s)[0];
+			if (d.getElementById(id)) return;
+			js = d.createElement(s); js.id = id;
+			js.src = "//connect.facebook.net/zh_TW/sdk.js";
+			fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+		
 		// Begin Google+ API Function
-			var googleAuth = (function() { return {
-				onSignInCallback: function(authResult) {
-					if (authResult.isSignedIn.get()) {
-						gapi.client.plus.people.get({
-							'userId': 'me'
-						}).then(function(res) {
-							var profile = res.result;
-							$.post("/getUserAuth", {
-								userId : profile.id,
-								userName : profile.displayName,
-								website : 2
-							}, function(data, status){
-								if(status == "success") setNavbar(data.code, 2);
-							});
-							console.log(profile);
-						}, function(err) {
-							console.log(err.result.message);
+		var googleAuth = (function() { return {
+			onSignInCallback: function(authResult) {
+				if (authResult.isSignedIn.get()) {
+					gapi.client.plus.people.get({
+						'userId': 'me'
+					}).then(function(res) {
+						var profile = res.result;
+						$.post("/userAuth", {
+							userId : profile.id,
+							userName : profile.displayName,
+							website : 2
+						}, function(data, status){
+							if(status == "success") {
+								$("li").addClass("hidden");
+								switch(data.code){
+									case 0:
+										$("#btnManagePage").removeClass("hidden");
+										$("#btnUploadScene").removeClass("hidden");
+										$("#btnTargetScene").removeClass("hidden");
+										$("#btnManageAuth").removeClass("hidden");
+										break;
+									case 1:
+										$("#btnManagePage").removeClass("hidden");
+										$("#btnUploadScene").removeClass("hidden");
+										$("#btnTargetScene").removeClass("hidden");
+										break;
+									case 2:
+										$("#btnUploadScene").removeClass("hidden");
+										$("#btnTargetScene").removeClass("hidden");
+										break;
+									default:
+										break;
+								}
+								$("#gDisconnect").removeClass("hidden");
+							}
 						});
-					} else {
-						if (authResult['error'] || authResult.currentUser.get().getAuthResponse() == null) {
-							// There was an error, which means the user is not signed in.
-							// As an example, you can handle by writing to the console:
-							console.log('There was an error: ' + authResult['error']);
-						}
-						setNavbar(-1);
+						console.log(profile);
+					}, function(err) {
+						console.log(err.result.message);
+					});
+				} else {
+					if (authResult['error'] || authResult.currentUser.get().getAuthResponse() == null) {
+						// There was an error, which means the user is not signed in.
+						// As an example, you can handle by writing to the console:
+						console.log('There was an error: ' + authResult['error']);
 					}
-				},
-
-				//Calls the OAuth2 endpoint to disconnect the app for the user.
-				disconnect: function() {
-					// Revoke the access token.
-					auth2.disconnect();
-				},
-				
-				// Gets and renders the currently signed in user's profile data.
-			};})();
-
-			// Handler for when the sign-in state changes.
-			var updateSignIn = function() {
-				if (auth2.isSignedIn.get()) {
-					console.log('signed in');
-					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
-				}else{
-					console.log('signed out');
-					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+					$("li").addClass("hidden");
+					$("#gConnect").removeClass("hidden");
+					$("#signin-button").removeClass("hidden");
 				}
-			}
+			},
 
-			// This method sets up the sign-in listener after the client library loads.
-			function startApp() {
-				gapi.load('auth2', function() {
-					gapi.client.load('plus','v1').then(function() {
-					gapi.signin2.render('signin-button', {
-						scope: 'https://www.googleapis.com/auth/plus.login',
-						fetch_basic_profile: false });
-					gapi.auth2.init({fetch_basic_profile: false,
-						scope:'https://www.googleapis.com/auth/plus.login'}).then(
-							function (){
-							auth2 = gapi.auth2.getAuthInstance();
-							auth2.isSignedIn.listen(updateSignIn);
-							auth2.then(updateSignIn);
-						});
+			//Calls the OAuth2 endpoint to disconnect the app for the user.
+			disconnect: function() {
+				// Revoke the access token.
+				auth2.disconnect();
+			},
+			
+			// Gets and renders the currently signed in user's profile data.
+		};})();
+
+		// Handler for when the sign-in state changes.
+		var updateSignIn = function() {
+			if (auth2.isSignedIn.get()) {
+				console.log('signed in');
+				googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+			}else{
+				console.log('signed out');
+				googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+			}
+		}
+
+		// This method sets up the sign-in listener after the client library loads.
+		function startApp() {
+			gapi.load('auth2', function() {
+				gapi.client.load('plus','v1').then(function() {
+				gapi.signin2.render('signin-button', {
+					scope: 'https://www.googleapis.com/auth/plus.login',
+					height: 27,
+					fetch_basic_profile: false });
+				gapi.auth2.init({fetch_basic_profile: false,
+					scope:'https://www.googleapis.com/auth/plus.login'}).then(
+						function (){
+						auth2 = gapi.auth2.getAuthInstance();
+						auth2.isSignedIn.listen(updateSignIn);
+						auth2.then(updateSignIn);
 					});
 				});
-			}
+			});
+		}
 		// END Google+ API Function
 
 		// Begin JQuery control Function
-			$(document).ready(function() {
-				$("#btnGdisconnect").click(googleAuth.disconnect);
-				$("#btnFilterWork").click(function(){
-					for (var i = 0; i < markers.length; i++) {
-						if(markers[i].getLabel().text.match($("#keyword").val()) == null){
-							markers[i].setMap(null);
-						}
-						else{
-							markers[i].setMap(map);
-						} 
-       				}
-				});
-				$("#keyword").keydown(function(event){
-    				if( event.which == 13 ) {
-						$("#btnFilterWork").trigger("click");
-    				}
-				});
-			});
-			
-			function setNavbar(authCode, authKind = -1){
-				$("li.navbar_li").addClass("hidden");
-				switch(authCode){
-					case -1:
-						$("#fbConnect").removeClass("hidden");
-						$("#gConnect").removeClass("hidden");
-						break;
-					case 0:
-						$("#btnManagePage").removeClass("hidden");
-						$("#btnUploadScene").removeClass("hidden");
-						$("#btnTargetScene").removeClass("hidden");
-						$("#btnManageAuth").removeClass("hidden");
-						break;
-					case 1:
-						$("#btnManagePage").removeClass("hidden");
-						$("#btnUploadScene").removeClass("hidden");
-						$("#btnTargetScene").removeClass("hidden");
-						break;
-					case 2:
-						$("#btnUploadScene").removeClass("hidden");
-						$("#btnTargetScene").removeClass("hidden");
-						break;
-					default:
-						break;
-				}
-				if(authCode >= 0){
-					switch(authKind){
-						case 1:
-							$("#fbConnect").removeClass("hidden");
-							break;
-						case 2:
-							$("#gSignOut").removeClass("hidden");
-							$("#gDisconnect").removeClass("hidden");
-							break;
-						default:
-							break;
+		$(document).ready(function() {
+			$("#btnGdisconnect").click(googleAuth.disconnect);
+			$("#btnFilterWork").click(function(){
+				for (var i = 0; i < markers.length; i++) {
+					if(markers[i].getLabel().text.match($("#keyword").val()) == null){
+						markers[i].setMap(null);
 					}
+					else{
+						markers[i].setMap(map);
+					} 
 				}
-			};
+			});
+			$("#keyword").keydown(function(event){
+				if( event.which == 13 ) {
+					$("#btnFilterWork").trigger("click");
+				}
+			});
+		});
 
+		$(window).load(function(){
+			initMap();
+		});
 		// End JQuery control Function
 
 	</script>
 	<script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0">
     </script>
 	<script src="https://apis.google.com/js/client:platform.js?onload=startApp"></script>
 	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -369,25 +319,16 @@
 	  			</from>
 			</div>
 			<ul class="nav navbar-nav navbar-right" id="user_bar">
-				<li id="btnShowNews" class="navbar_li_nohide"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
-				<li id="btnTargetScene" class="hidden navbar_li"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
-				<!--
-				<li id="btnUploadScene" class="hidden navbar_li"><a href="#"><span class="glyphicon glyphicon-cloud-upload"></span> 上傳景點</a></li>
-				-->
-				<li id="btnManagePage" class="hidden navbar_li"><a href="/manage"><span class="glyphicon glyphicon-cog"></span> 管理頁面</a></li>
-				<li id="btnManageAuth" class="hidden navbar_li"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
-				<li id="fbConnect" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 10px;">
-					<div class="fb-login-button" data-max-rows="1" data-size="medium" data-button-type="login_with"
-						 data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="false"></div>
+				<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
+				<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
+				<li id="btnUploadScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-cloud-upload"></span> 新增景點</a></li>
+				<li id="btnManagePage" class="hidden"><a href="/manage"><span class="glyphicon glyphicon-cog"></span> 管理頁面</a></li>
+				<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
+				<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
+					<div id="signin-button" class="hidden"></div>
 				</li>
-				<li id="gConnect" class="hidden navbar_li" style="padding-top: 6px; padding-left: 10px; padding-right: 20px;">
-					<div id="signin-button"></div>
-				</li>
-				<li id="gSignOut" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 10px;">
-					<button class="btn btn-default btn-sm" id="btnGsignOut" onclick="auth2.signOut()">登出</button>
-				</li>
-				<li id="gDisconnect" class="hidden navbar_li" style="padding-top: 10px; padding-left: 10px; padding-right: 20px;">
-					<button class="btn btn-default btn-sm" id="btnGdisconnect" >完全登出</button>
+				<li id="gDisconnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 20px;">
+					<button class="btn btn-default btn-sm" id="btnGdisconnect" >登出</button>
 				</li>
 			</ul>
 		</div>
