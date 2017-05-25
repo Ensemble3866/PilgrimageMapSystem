@@ -12,10 +12,8 @@ var extArticles = mongoose.model('extArticles');
 router.get('/', function(req, res, next) {
 	
 	Placemarks.find({}).populate('work').exec(function(err, _placemark){
-		if(err) {
-			console.log("placemark load fail.");
-			res.send("Server error.");
-		}
+		if(err) res.status(500).send(err);
+		
 		req.session.auth = 3;
 		res.render('index.ejs', { placemark: _placemark });
 	});
@@ -32,7 +30,7 @@ router.post('/userAuth', function(req, res, next){
 				authLevel : 2
 			});
 			newUser.save(function(err){
-				if(err) return handleError(err);
+				if(err) res.status(500).send(err);
 			});
 			req.session.auth = 2;
 			req.session.curUser = newUser._id;
@@ -48,12 +46,10 @@ router.post('/userAuth', function(req, res, next){
 /* Handle request of ajax. */
 router.get('/placemark/:placemarkId', function(req, res, next){
 	Placemarks.findOne({ _id: req.params.placemarkId }).populate('work').sort('work').exec(function(err, _placemark){
-		if(err){
-			console.log("scene load fail.");
-			res.send("Server error.");
-		}
+		if(err) res.status(500).send(err);
+
 		Scenes.find({ placemark: _placemark._id }).sort('work').exec(function(err, _scenes){
-			res.send({placemark: _placemark, scenes: _scenes});
+			res.render('placemarkInfo.ejs', {placemark: _placemark, scenes: _scenes});
 		});
 	});
 });
