@@ -1,30 +1,109 @@
-<div class="container" id="intro">	
-    <div class="page-header" id="place">
-        <h2><%= placemark.name %></h2><h4><span class="label label-info"><%= placemark.work.length %>個作品</span></h4>
-        <p><%= placemark.description %></p>
-    </div><br/>
-    <!--顯示所在地點的所有作品-->
-    <!--其中一個作品-->
-    <div class="col-md-5" id="text">
-        <% for(var i = 0; i < placemark.work.length; i++) {%>
-            <div class="row" id="text">
-                <h3><%= placemark.work[i].c_name %></h3>
-                <p><%= placemark.work[i].category %></p>
-                <p><%= placemark.work[i].introduction %></p>
-            </div>
-        <% } %>
-    </div>
-    <!--圖片資訊-->
-    <div class="col-md-6 col-md-offset-1" id="pics" style="border:1px solid #F05E1C;  border-radius:20px;">
-        <% for(var index in scenes) {%>
+<script>
+    $("#btnAddTag").click(function(){
+		$("#formAddTag").slideToggle();
+    });
+
+     $("#newTag").keydown(function(event){
+        if( event.which == 13 ) {
+            $("#submitTag").trigger("click");
+        }
+    });
+
+    $("#submitTag").click(function(){
+        $.post("/submitTag", {
+            tag : $("#newTag").val()
+        }, function(data, status){
+            if(status == "success"){
+                var newTag = "<span class='label label-info' style='padding:4px; margin-right:5px;'>" + 
+                     "<a href='#' style='color:white; text-decoration:none;'>" + $("#newTag").val() + "</a>&nbsp;" +
+                     "<a href='#' class='delTag'><span class='glyphicon glyphicon-remove'></a></span>";
+                $("#btnAddTag").before(newTag);
+                $("#formAddTag").slideToggle();
+                $("#newTag").val("");
+                $(".delTag").click(function(){
+                    var thistag = $(this);
+                    $.post("/delTag",{
+                        tag : $(this).prev().text()
+                    }, function(data, status){
+                        if(status == "success"){
+                            //Delete tag
+                            thistag.parent().empty();
+                        }
+                    });
+                });
+            }
+        });
+    });
+
+    $(".delTag").click(function(){
+        var thistag = $(this);
+        $.post("/delTag",{
+            tag : $(this).prev().text()
+        }, function(data, status){
+            if(status == "success"){
+                //Delete tag
+                thistag.parent().empty();
+            }
+        });
+    });
+
+    $("#delPlacemark").click(function(){
+        $.get("/delPlacemark", function(data, status){
+            if(status == "success"){
+				window.location.reload();
+			}
+        });
+    });
+
+</script>
+<div class="container">	
+    <div class="page-header">
+        <h2><%= placemark.name %>&nbsp;&nbsp;
+        <button class="btn btn-primary">
+            <span class="glyphicon glyphicon-star" aria-hidden="true"> 記錄
+        </button>
+        <button class="btn btn-success">
+            <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航
+        </button>
+            <% if(mod < 2) {%>
+                <button class="btn btn-primary">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"> 編輯
+                </button>
+                <button type="button" id="delPlacemark" class="btn btn-danger">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"> 刪除
+                </button>
+            <% } %>
+        </h2>
+        <h4>
+            <% for(i = 0; i < placemark.tag.length; i++) {%>
+                <span class="label label-info" style="padding:4px; margin-right:5px;">
+                    <a href="#" style="color:white; text-decoration:none;"><%= placemark.tag[i] %></a>&nbsp;
+                    <% if(mod < 2) {%>
+                        <a href="#" class="delTag"><span class="glyphicon glyphicon-remove"></a>
+                    <% } %>
+                </span>
+            <% } %>
+            <button id="btnAddTag" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
+        </h4>
+        <form id="formAddTag" class="form-inline" onkeypress="return event.keyCode != 13;" hidden>
             <div class="row">
-                <div class="col-sm-6">
-                    <img src="imgs/<%= scenes[index].realImgUrl %>" style="height:150px" title="<%= scenes[index].name %>" class="img-responsive img-round" />
-                </div>
-                <div class="col-sm-6">
-                    <img src="imgs/<%= scenes[index].workImgUrl %>" style="height:150px" title="<%= scenes[index].name %>" class="img-responsive img-round" />
+                <div class="col-md-12">
+                    <input id="newTag" type="text" class="form-control">&nbsp;&nbsp;
+                    <button type="button" id="submitTag" class="btn btn-primary">送出</button>
                 </div>
             </div>
-        <% } %>
+        </form>
+    </div>
+    <div class="col-md-8">
+        <p>地址：<%= placemark.address %></p>
+        <p><%= placemark.description %></p>
+        <div class="row">
+            <div class="col-sm-6">
+                <img src="" style="height:150px" title="" class="img-responsive img-round" />
+            </div>
+            <div class="col-sm-6">
+                <img src="" style="height:150px" title="" class="img-responsive img-round" />
+            </div>
+        </div>
     </div>
 </div>

@@ -51,228 +51,309 @@
 		<![endif]-->
 	</head>
 	<body style="height: 100%;">
-	<script type="text/javascript">
-		// Set varibles will be used
-		var map;
-		var markers = [];
-		var auth2 = {};
+		<script type="text/javascript">
+			// Set varibles will be used
+			var map;
+			var markers = [];
+			var auth2 = {};
+			var varTagList = [];
 
-		// Set Google Map Function
-		function initMap() {
-			map = new google.maps.Map(document.getElementById('map'), {
-				//mapOptions
-				zoom: 6,
-				center: {lat: 36.2048240, lng: 138.2529240},
-				mapTypeControl: true,	
-				mapTypeControlOptions: {
-					position: google.maps.ControlPosition.LEFT_BOTTOM
-				}
-			});
-			<% for(var index in placemark) {%>
-				var marker = new google.maps.Marker({
-					position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
-					map : map,
-					//icon : 'static/pic/placemark.png',
-					label : {
-						text :'<% for(var i in placemark[index].work) {%><%=placemark[index].work[i].c_name %><%=placemark[index].work[i].j_name %> <% } %>', 
-						fontSize :'0px'
-					},
-					title : '<%= placemark[index].name %>'
+			// Set Google Map Function
+			function initMap() {
+				map = new google.maps.Map(document.getElementById('map'), {
+					//mapOptions
+					zoom: 6,
+					center: {lat: 36.2048240, lng: 138.2529240},
+					mapTypeControl: true,	
+					mapTypeControlOptions: {
+						position: google.maps.ControlPosition.LEFT_BOTTOM
+					}
 				});
-				marker.addListener('click', function(){
-					$("#placemarkInfo").empty();
-					$("#placemarkInfo").load("/placemark/"+"<%= placemark[index]._id %>", function(){
-						console.log("Placemark load success.");	
+				<% for(var index in placemark) {%>
+					var marker = new google.maps.Marker({
+						position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
+						map : map,
+						//icon : 'static/pic/placemark.png',
+						label : {
+							text :'<% for(i=0; i<placemark[index].tag.length; i++) {%><%=placemark[index].tag[i] %>,<% } %>', 
+							fontSize :'0px'
+						},
+						title : '<%= placemark[index].name %>'
 					});
-				});
-				markers.push(marker);
-			<% } %>
-			google.maps.event.addDomListener(window, "load", initMap);
-		};
-		
-		//Facebook SDK init
-		window.fbAsyncInit = function() {
-			FB.init({
-				appId      : '316465528767796',
-				cookie     : true,  // enable cookies to allow the server to access the session
-				xfbml      : true,  // parse social plugins on this page
-				version    : 'v2.8' // use graph api version 2.8
-			});
-		};
-
-		// Load the SDK asynchronously
-		(function(d, s, id) {
-			var js, fjs = d.getElementsByTagName(s)[0];
-			if (d.getElementById(id)) return;
-			js = d.createElement(s); js.id = id;
-			js.src = "//connect.facebook.net/zh_TW/sdk.js";
-			fjs.parentNode.insertBefore(js, fjs);
-		}(document, 'script', 'facebook-jssdk'));
-		
-		// Begin Google+ API Function
-		var googleAuth = (function() { return {
-			onSignInCallback: function(authResult) {
-				if (authResult.isSignedIn.get()) {
-					gapi.client.plus.people.get({
-						'userId': 'me'
-					}).then(function(res) {
-						var profile = res.result;
-						$.post("/userAuth", {
-							userId : profile.id,
-							userName : profile.displayName,
-							website : 2
-						}, function(data, status){
-							if(status == "success") {
-								$("li").addClass("hidden");
-								switch(data.code){
-									case 0:
-										$("#btnManagePage").removeClass("hidden");
-										$("#btnUploadScene").removeClass("hidden");
-										$("#btnTargetScene").removeClass("hidden");
-										$("#btnManageAuth").removeClass("hidden");
-										break;
-									case 1:
-										$("#btnManagePage").removeClass("hidden");
-										$("#btnUploadScene").removeClass("hidden");
-										$("#btnTargetScene").removeClass("hidden");
-										break;
-									case 2:
-										$("#btnUploadScene").removeClass("hidden");
-										$("#btnTargetScene").removeClass("hidden");
-										break;
-									default:
-										break;
-								}
-								$("#gDisconnect").removeClass("hidden");
-							}
+					marker.addListener('click', function(){
+						$("#divAddPlacemark").hide();
+						$("#placemarkInfo").load("/placemark/"+"<%= placemark[index]._id %>", function(){
+							console.log("Placemark load success.");	
 						});
-						console.log(profile);
-					}, function(err) {
-						console.log(err.result.message);
+						$("#placemarkInfo").show();
 					});
-				} else {
-					if (authResult['error'] || authResult.currentUser.get().getAuthResponse() == null) {
-						// There was an error, which means the user is not signed in.
-						// As an example, you can handle by writing to the console:
-						console.log('There was an error: ' + authResult['error']);
-					}
-					$("li").addClass("hidden");
-					$("#gConnect").removeClass("hidden");
-					$("#signin-button").removeClass("hidden");
-				}
-			},
-
-			//Calls the OAuth2 endpoint to disconnect the app for the user.
-			disconnect: function() {
-				// Revoke the access token.
-				auth2.disconnect();
-			},
+					markers.push(marker);
+				<% } %>
+				google.maps.event.addDomListener(window, "load", initMap);
+			};
 			
-			// Gets and renders the currently signed in user's profile data.
-		};})();
+			//Facebook SDK init
+			window.fbAsyncInit = function() {
+				FB.init({
+					appId      : '316465528767796',
+					cookie     : true,  // enable cookies to allow the server to access the session
+					xfbml      : true,  // parse social plugins on this page
+					version    : 'v2.8' // use graph api version 2.8
+				});
+			};
 
-		// Handler for when the sign-in state changes.
-		var updateSignIn = function() {
-			if (auth2.isSignedIn.get()) {
-				console.log('signed in');
-				googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
-			}else{
-				console.log('signed out');
-				googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+			// Load the SDK asynchronously
+			(function(d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) return;
+				js = d.createElement(s); js.id = id;
+				js.src = "//connect.facebook.net/zh_TW/sdk.js";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'facebook-jssdk'));
+			
+			// Begin Google+ API Function
+			var googleAuth = (function() { return {
+				onSignInCallback: function(authResult) {
+					if (authResult.isSignedIn.get()) {
+						gapi.client.plus.people.get({
+							'userId': 'me'
+						}).then(function(res) {
+							var profile = res.result;
+							$.post("/userAuth", {
+								userId : profile.id,
+								userName : profile.displayName,
+								website : 2
+							}, function(data, status){
+								if(status == "success") {
+									$("li").addClass("hidden");
+									switch(data.code){
+										case 0:
+											$("#btnManagePage").removeClass("hidden");
+											$("#btnAddPlacemark").removeClass("hidden");
+											$("#btnTargetScene").removeClass("hidden");
+											$("#btnManageAuth").removeClass("hidden");
+											break;
+										case 1:
+											$("#btnManagePage").removeClass("hidden");
+											$("#btnAddPlacemark").removeClass("hidden");
+											$("#btnTargetScene").removeClass("hidden");
+											break;
+										case 2:
+											$("#btnAddPlacemark").removeClass("hidden");
+											$("#btnTargetScene").removeClass("hidden");
+											break;
+										default:
+											break;
+									}
+									$("#gDisconnect").removeClass("hidden");
+								}
+							});
+							console.log(profile);
+						}, function(err) {
+							console.log(err.result.message);
+						});
+					} else {
+						if (authResult['error'] || authResult.currentUser.get().getAuthResponse() == null) {
+							// There was an error, which means the user is not signed in.
+							// As an example, you can handle by writing to the console:
+							console.log('There was an error: ' + authResult['error']);
+						}
+						$("li").addClass("hidden");
+						$("#gConnect").removeClass("hidden");
+						$("#signin-button").removeClass("hidden");
+					}
+				},
+
+				//Calls the OAuth2 endpoint to disconnect the app for the user.
+				disconnect: function() {
+					// Revoke the access token.
+					auth2.disconnect();
+					window.location.reload();
+				},
+				
+				// Gets and renders the currently signed in user's profile data.
+			};})();
+
+			// Handler for when the sign-in state changes.
+			var updateSignIn = function() {
+				if (auth2.isSignedIn.get()) {
+					console.log('signed in');
+					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+				}else{
+					console.log('signed out');
+					googleAuth.onSignInCallback(gapi.auth2.getAuthInstance());
+				}
 			}
-		}
 
-		// This method sets up the sign-in listener after the client library loads.
-		function startApp() {
-			gapi.load('auth2', function() {
-				gapi.client.load('plus','v1').then(function() {
-				gapi.signin2.render('signin-button', {
-					scope: 'https://www.googleapis.com/auth/plus.login',
-					height: 27,
-					fetch_basic_profile: false });
-				gapi.auth2.init({fetch_basic_profile: false,
-					scope:'https://www.googleapis.com/auth/plus.login'}).then(
-						function (){
-						auth2 = gapi.auth2.getAuthInstance();
-						auth2.isSignedIn.listen(updateSignIn);
-						auth2.then(updateSignIn);
+			// This method sets up the sign-in listener after the client library loads.
+			function startApp() {
+				gapi.load('auth2', function() {
+					gapi.client.load('plus','v1').then(function() {
+					gapi.signin2.render('signin-button', {
+						scope: 'https://www.googleapis.com/auth/plus.login',
+						height: 27,
+						fetch_basic_profile: false });
+					gapi.auth2.init({fetch_basic_profile: false,
+						scope:'https://www.googleapis.com/auth/plus.login'}).then(
+							function (){
+							auth2 = gapi.auth2.getAuthInstance();
+							auth2.isSignedIn.listen(updateSignIn);
+							auth2.then(updateSignIn);
+						});
 					});
 				});
-			});
-		}
-		// END Google+ API Function
+			}
+			// END Google+ API Function
 
-		// Begin JQuery control Function
-		$(document).ready(function() {
-			$("#btnGdisconnect").click(googleAuth.disconnect);
-			$("#btnFilterWork").click(function(){
-				for (var i = 0; i < markers.length; i++) {
-					if(markers[i].getLabel().text.match($("#keyword").val()) == null){
-						markers[i].setMap(null);
+			// Begin JQuery control Function
+			$(document).ready(function() {
+
+				$("#keyword").keydown(function(event){
+					if( event.which == 13 ) {
+						$("#btnFilterWork").trigger("click");
 					}
-					else{
-						markers[i].setMap(map);
-					} 
-				}
-			});
-			$("#keyword").keydown(function(event){
-				if( event.which == 13 ) {
-					$("#btnFilterWork").trigger("click");
-				}
-			});
-		});
+				});
 
-		$(window).load(function(){
-			initMap();
-		});
-		// End JQuery control Function
+				$("#btnFilterWork").click(function(){
+					for (var i = 0; i < markers.length; i++) {
+						if(markers[i].getLabel().text.match($("#keyword").val()) == null){
+							markers[i].setMap(null);
+						}
+						else{
+							markers[i].setMap(map);
+						} 
+					}
+				});
+				
+				$("#btnAddPlacemark").click(function(){
+					$("#placemarkInfo").hide();
+					$("#divAddPlacemark").show();
+				});
 
-	</script>
-	<script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0">
-    </script>
-	<script src="https://apis.google.com/js/client:platform.js?onload=startApp"></script>
-	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<a class="navbar-brand" href="#">
-					<span class="glyphicon glyphicon-home"></span>
-				</a>
-				<!--
-				<a class="navbar-brand" href="#">Logo
-					<img alt="Logo" src="#"> 
-				</a>
-				-->
-				<from class="navbar-form navbar-left form-inline" role="form" action="/" method="post" id="search">
-					<div class="form-group">
-						<div class="input-group">
-							<input type="text" class="form-control" id="keyword" style="width: 500px;">
-				   			<span class="input-group-btn">
-				   				<button type="submit" class="btn btn-default btn-md" id="btnFilterWork">找作品
-				   					<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-								</button>
-				   			</span>
-			   			</div>
-		   			</div>
-	  			</from>
+				$("#btnGdisconnect").click(googleAuth.disconnect);
+
+				$("#btnAddTagList").click(function(){
+					var newTag = "<span class='label label-info' style='padding:4px; margin-left:5px;'>" + 
+						"<a href='#' style='color:white; text-decoration:none;'>" + $("#placemarkTag").val() + "</a>" +
+						"<a href='#' class='delNewTag'><span class='glyphicon glyphicon-remove'></a></span>";
+					$("#tagList").children(":last").after(newTag);
+					varTagList.push($("#placemarkTag").val());
+					$("#placemarkTag").val("");
+					$("input[name=placemarkTagList]").val(varTagList);
+					$(".delNewTag").click(function(){
+						alert(varTagList);
+						for(var i in varTagList){
+							if(varTagList[i] == $(this).prev().text()){
+								varTagList.splice(i, 1);
+								break;
+							}
+						}
+						$("input[name=placemarkTagList]").val(varTagList);
+						$(this).parent().empty();
+					});
+				});
+
+				$("#btnRemoveInputOfPlacemark").click(function(){
+					$("#placemarkName").val("");
+					$("#placemarkLat").val("");
+					$("#placemarkLng").val("");
+					$("span.label-info").empty();
+					varTagList = [];
+					$("#placemarkAddress").val("");
+					$("#placemarkDesc").val("");
+				});
+
+			});
+
+			$(window).load(function(){
+				initMap();
+			});
+			// End JQuery control Function
+
+		</script>
+		<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALm13waMtWSh3upgvjnblpwSPBPLI3oe0">
+		</script>
+		<script src="https://apis.google.com/js/client:platform.js?onload=startApp"></script>
+		<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">
+						<span class="glyphicon glyphicon-home"></span>
+					</a>
+					<!--
+					<a class="navbar-brand" href="#">Logo
+						<img alt="Logo" src="#"> 
+					</a>
+					-->
+					<from class="navbar-form navbar-left form-inline" role="form" action="/" method="post" id="search">
+						<div class="form-group">
+							<div class="input-group">
+								<input type="text" class="form-control" id="keyword" style="width: 500px;">
+								<span class="input-group-btn">
+									<button type="submit" class="btn btn-default btn-md" id="btnFilterWork">
+										<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+									</button>
+								</span>
+							</div>
+						</div>
+					</from>
+				</div>
+				<ul class="nav navbar-nav navbar-right" id="user_bar">
+					<li id="btnAddPlacemark" class="hidden"><a href="#"><span class="glyphicon glyphicon-plus"></span> 新增景點</a></li>
+					<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
+					<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
+					<li id="btnManagePage" class="hidden"><a href="/manage"><span class="glyphicon glyphicon-cog"></span> 管理頁面</a></li>
+					<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
+					<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
+						<div id="signin-button" class="hidden"></div>
+					</li>
+					<li id="gDisconnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 20px;">
+						<button class="btn btn-default btn-sm" id="btnGdisconnect" >登出</button>
+					</li>
+				</ul>
 			</div>
-			<ul class="nav navbar-nav navbar-right" id="user_bar">
-				<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
-				<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
-				<li id="btnUploadScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-cloud-upload"></span> 新增景點</a></li>
-				<li id="btnManagePage" class="hidden"><a href="/manage"><span class="glyphicon glyphicon-cog"></span> 管理頁面</a></li>
-				<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
-				<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
-					<div id="signin-button" class="hidden"></div>
-				</li>
-				<li id="gDisconnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 20px;">
-					<button class="btn btn-default btn-sm" id="btnGdisconnect" >登出</button>
-				</li>
-			</ul>
+		</nav>
+		<div id="map" style="height: 60%; width: 100%;"></div>
+		<div id="placemarkInfo"></div>
+		<div id="divAddPlacemark">
+			<div class="container">
+				<div class="col-md-8" style="padding: 20px;">
+					<form id="formAddPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="/addPlacemark" method="post">
+						<div class="row" style="margin-bottom: 10px; margin-top: 20px;">
+							<input type="text" class="form-control" id="placemarkName" name="placemarkName" style="height:40px; width:50%;" placeholder="景點名稱">
+							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLat" name="placemarkLat" placeholder="緯度(latitude)">
+							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLng" name="placemarkLng" placeholder="經度(longitude)">
+						</div>
+						<div class="row" style="margin-bottom: 10px;">	
+							<h4 id="tagList">
+								<input id="placemarkTag" type="text" class="form-control" style="width:130px;" placeholder="追加標籤">&nbsp;
+								<button type="button" id="btnAddTagList" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
+							</h4>
+						</div>
+						<input type="hidden" name="placemarkTagList">
+						<hr>
+						<div class="row" style="margin-bottom: 10px;">
+							<input type="text" class="form-control" id="placemarkAddress" name="placemarkAddress" style="width:99%;" placeholder="地址">
+						</div>
+						<div class="row" style="margin-bottom: 10px;">
+							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="敘述"></textarea>
+						</div>
+						<div class="row" style="margin-bottom: 10px;">
+							<div class="col-md-6 col-md-offset-6">
+								<p class="text-right">
+									<button type="button" class="btn btn-danger" id="btnRemoveInputOfPlacemark">清除</button>
+									<button type="submit" class="btn btn-primary">送出</button>
+								</p>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="col-md-4" style="padding: 20px;">
+					<h3>為地圖增添更多聖地景點。</h3>
+					<p>使用左列的格式將最新的聖地景點添加至地圖上。在送出前請注意以下幾點：</p>
+				</div>
+			</div>
 		</div>
-	</nav>
-    <div id="map" style="height: 80%; width: 100%;"></div>
-    <br>
-	<div id="placemarkInfo"></div>
 	</body>
 </html>
