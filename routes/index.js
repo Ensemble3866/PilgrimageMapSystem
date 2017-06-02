@@ -1,18 +1,32 @@
 require('../lib/db');
 var express = require('express');
 var router = express.Router();
+var multer  = require('multer');
+var fs = require('fs');
+var path = require('path');
 var mongoose = require('mongoose'); 
 var Placemarks = mongoose.model('placemarks');
 var tagHistory = mongoose.model('tagHistory');
-var Scenes = mongoose.model('scenes');
 var Users = mongoose.model('users');
-var extArticles = mongoose.model('extArticles');
+var upload = multer({
+	dest: 'public/imgs/',
+	fileFilter: function(req, file, callback) {
+		var ext = path.extname(file.originalname);
+		if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+			//callback(null, false);
+			extnameError = new Error("上傳的圖片中包含錯誤的檔案格式！");
+			extnameError.type = "extnameError";
+			callback(extnameError);
+		}
+		callback(null, true);
+	}
+});
 
 /* Handle request of homepage. */
 router.get('/', function(req, res, next) {
 	
 	Placemarks.find({}).exec(function(err, _placemark){
-		if(err) res.status(500).send(err);
+		if(err) next(err);
 		
 		req.session.auth = 3;
 		res.render('index.ejs', { placemark: _placemark });
@@ -22,7 +36,7 @@ router.get('/', function(req, res, next) {
 /* Get user authority.  */
 router.post('/userAuth', function(req, res, next){
 	Users.findOne({ $and:[ { accountKey : req.body.userId }, { accountKind : req.body.website } ]}).exec(function(err, _user){
-		if(err) return handleError(err);
+		if(err) next(err);
 		if(_user == null){
 			var newUser = new Users({
 				name : req.body.userName,
@@ -31,7 +45,7 @@ router.post('/userAuth', function(req, res, next){
 				authLevel : 2
 			});
 			newUser.save(function(err){
-				if(err) res.status(500).send(err);
+				if(err) next(err);
 			});
 			req.session.auth = 2;
 			req.session.curUser = newUser._id;
@@ -45,8 +59,39 @@ router.post('/userAuth', function(req, res, next){
 });
 
 /* Add new placemark. */
-router.post('/addPlacemark', function(req, res, next) {
+router.post('/addPlacemark', upload.array('uploadImg', 10), function(req, res, next) {
+	//Confirm authority
+	if(req.session.auth > 2){
+		next(new Error("非法操作！請重新登入。"));
+	}
 	var tagList = req.body.placemarkTagList.split(',');
+	var imgList = [];
+
+	var extName = "";
+	for(var i = 0; i < req.files.length; i++){
+		switch(req.files[i].mimetype){
+			case 'image/pjpeg':
+			case 'image/jpeg':
+			case 'image/jpg':
+				extName = 'jpg';
+				break;         
+			case 'image/png':
+			case 'image/x-png':
+				extName = 'png';
+				break;
+			default:
+				break;
+		}
+		if(extName.length == 0){
+			next(new Error("上傳的圖片中包含錯誤的檔案格式！"));
+		}
+		var imgName = Date.now().toString() + '.' + extName;
+		var imgPath = "public/imgs/" +imgName;
+		var newImg = { url : imgName, remark : req.body.imgDesc[i] };
+        fs.renameSync("public/imgs/" + req.files[i].filename, imgPath);
+		imgList.push(newImg);
+	}
+
 	var newPlacemark = new Placemarks({
 		name: req.body.placemarkName,
 		address: req.body.placemarkAddress,
@@ -54,6 +99,7 @@ router.post('/addPlacemark', function(req, res, next) {
 		longitude: req.body.placemarkLng,
 		description: req.body.placemarkDesc,
 		tag: tagList,
+		img : imgList,
 		builder: req.session.curUser,
 		checker: req.session.curUser
 	});
@@ -87,7 +133,7 @@ router.get('/placemark/:placemarkId', function(req, res, next){
 
 /*Delete placemark. */
 router.get('/delPlacemark', function(req, res, next) {
-	//確認權限
+	//Confirm authority
 	if(req.session.auth > 2){
 		res.redirect('/');
 		res.end();

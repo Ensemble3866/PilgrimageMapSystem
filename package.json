@@ -15,8 +15,7 @@
     "serve-favicon": "~2.4.2",
     "cookie-session": "*",
     "mongoose": "*",
-    "formidable" : "latest",
-    "angular": "1.6.4",
+    "multer" : "latest",
     "holderjs": "latest"
   },
   "description": "Pilgrimage map system",

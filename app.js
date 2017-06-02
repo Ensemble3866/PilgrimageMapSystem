@@ -8,7 +8,6 @@ var cookieSession = require('cookie-session');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var manage = require('./routes/manage');
 var setauth = require('./routes/setauth');
 
 var app = express();
@@ -27,7 +26,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieSession({key: 'nodejs', secret: 'bike2467'}));
 
 app.use('/', index);
-app.use('/manage', manage);
 app.use('/users', users);
 app.use('/setauth', setauth);
 
@@ -46,7 +44,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', { message : err.message, error : err });
 });
 
 module.exports = app;

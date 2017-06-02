@@ -1,7 +1,6 @@
 require('../lib/db');
 var express = require('express');
 var router = express.Router();
-var formidable = require('formidable');
 var fs = require('fs');
 var mongoose = require('mongoose');
 var Works = mongoose.model('works');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%;">
+<html lang="zh_TW" style="height: 100%;">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -37,7 +37,7 @@
 
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" ></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<!-- jQuery tmpl 模板功能 -->
 		<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
@@ -57,40 +57,7 @@
 			var markers = [];
 			var auth2 = {};
 			var varTagList = [];
-
-			// Set Google Map Function
-			function initMap() {
-				map = new google.maps.Map(document.getElementById('map'), {
-					//mapOptions
-					zoom: 6,
-					center: {lat: 36.2048240, lng: 138.2529240},
-					mapTypeControl: true,	
-					mapTypeControlOptions: {
-						position: google.maps.ControlPosition.LEFT_BOTTOM
-					}
-				});
-				<% for(var index in placemark) {%>
-					var marker = new google.maps.Marker({
-						position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
-						map : map,
-						//icon : 'static/pic/placemark.png',
-						label : {
-							text :'<% for(i=0; i<placemark[index].tag.length; i++) {%><%=placemark[index].tag[i] %>,<% } %>', 
-							fontSize :'0px'
-						},
-						title : '<%= placemark[index].name %>'
-					});
-					marker.addListener('click', function(){
-						$("#divAddPlacemark").hide();
-						$("#placemarkInfo").load("/placemark/"+"<%= placemark[index]._id %>", function(){
-							console.log("Placemark load success.");	
-						});
-						$("#placemarkInfo").show();
-					});
-					markers.push(marker);
-				<% } %>
-				google.maps.event.addDomListener(window, "load", initMap);
-			};
+			var fileNum = 1;
 			
 			//Facebook SDK init
 			window.fbAsyncInit = function() {
@@ -205,8 +172,36 @@
 			}
 			// END Google+ API Function
 
-			// Begin JQuery control Function
-			$(document).ready(function() {
+			$(document).ready(function(){
+				map = new google.maps.Map(document.getElementById('map'), {
+					//mapOptions
+					zoom: 6,
+					center: {lat: 36.2048240, lng: 138.2529240},
+					mapTypeControl: true,	
+					mapTypeControlOptions: {
+						position: google.maps.ControlPosition.LEFT_BOTTOM
+					}
+				});
+				<% for(var index in placemark) {%>
+					var marker = new google.maps.Marker({
+						position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
+						map : map,
+						//icon : 'static/pic/placemark.png',
+						label : {
+							text :'<% for(i=0; i<placemark[index].tag.length; i++) {%><%=placemark[index].tag[i] %>,<% } %>', 
+							fontSize :'0px'
+						},
+						title : '<%= placemark[index].name %>'
+					});
+					marker.addListener('click', function(){
+						$("#divPlacemark").hide();
+						$("#placemarkInfo").load("/placemark/"+"<%= placemark[index]._id %>", function(){
+							console.log("Placemark load success.");	
+						});
+						$("#placemarkInfo").show();
+					});
+					markers.push(marker);
+				<% } %>
 
 				$("#keyword").keydown(function(event){
 					if( event.which == 13 ) {
@@ -227,12 +222,16 @@
 				
 				$("#btnAddPlacemark").click(function(){
 					$("#placemarkInfo").hide();
-					$("#divAddPlacemark").show();
+					$("#divPlacemark").show();
 				});
 
 				$("#btnGdisconnect").click(googleAuth.disconnect);
 
 				$("#btnAddTagList").click(function(){
+					if($("#placemarkTag").val().length == 0 || $("#placemarkTag").val().length > 20){
+						$("#placemarkTag").tooltip('show');
+						return;
+					}
 					var newTag = "<span class='label label-info' style='padding:4px; margin-left:5px;'>" + 
 						"<a href='#' style='color:white; text-decoration:none;'>" + $("#placemarkTag").val() + "</a>" +
 						"<a href='#' class='delNewTag'><span class='glyphicon glyphicon-remove'></a></span>";
@@ -241,7 +240,6 @@
 					$("#placemarkTag").val("");
 					$("input[name=placemarkTagList]").val(varTagList);
 					$(".delNewTag").click(function(){
-						alert(varTagList);
 						for(var i in varTagList){
 							if(varTagList[i] == $(this).prev().text()){
 								varTagList.splice(i, 1);
@@ -263,12 +261,53 @@
 					$("#placemarkDesc").val("");
 				});
 
-			});
+				/*
+				//表單驗證
+				$("#formPlacemark").submit(function(){
+					var isFormValid = true;
+					//驗證景點名稱
+					if($("#placemarkName").val().length == 0 || $("#placemarkName").val().length > 20){
+						isFormValid = false;
+						$("#placemarkName").tooltip('show');
+					}
+					//驗證經緯度
+					var lat = parseFloat($("#placemarkLat").val());
+					var lng = parseFloat($("#placemarkLng").val());
+					if(isNaN(lat) || lat < -90 || lat > 90){
+						isFormValid = false;
+						$("#placemarkLat").tooltip('show');
+					}
+					if(isNaN(lng) || lng < -180 || lng > 180){
+						isFormValid = false;
+						$("#placemarkLng").tooltip('show');
+					}
+					//驗證地址
+					if($("#placemarkAddress").val().length == 0){
+						isFormValid = false;
+						$("#placemarkAddress").tooltip('show');
+					}
+					//驗證敘述
+					if($("#placemarkDesc").val().length == 0){
+						isFormValid = false;
+						$("#placemarkDesc").tooltip('show');
+					}
 
-			$(window).load(function(){
-				initMap();
+					return isFormValid;
+				});
+				*/
 			});
-			// End JQuery control Function
+			
+			$(document).on("change", "input[type=file]", function(){
+				if(fileNum < 10 && $(this).hasClass("lastFile")){
+					var newImg = "<div class='row' style='margin-bottom: 10px;'>"
+								+ "<input name='uploadImg' type='file' class='form-control lastFile' accept='image/*'>&nbsp;"
+								+ "<input name='imgDesc' type='text' class='form-control' style='width:59%;' placeholder='圖片描述'>"
+								+ "</div>";
+					$(this).parent().after(newImg);
+					$(this).removeClass("lastFile");
+					fileNum++;
+				}
+			});
 
 		</script>
 		<script async defer
@@ -303,7 +342,6 @@
 					<li id="btnAddPlacemark" class="hidden"><a href="#"><span class="glyphicon glyphicon-plus"></span> 新增景點</a></li>
 					<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
 					<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
-					<li id="btnManagePage" class="hidden"><a href="/manage"><span class="glyphicon glyphicon-cog"></span> 管理頁面</a></li>
 					<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
 					<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
 						<div id="signin-button" class="hidden"></div>
@@ -316,28 +354,32 @@
 		</nav>
 		<div id="map" style="height: 60%; width: 100%;"></div>
 		<div id="placemarkInfo"></div>
-		<div id="divAddPlacemark">
+		<div id="divPlacemark">
 			<div class="container">
 				<div class="col-md-8" style="padding: 20px;">
-					<form id="formAddPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="/addPlacemark" method="post">
-						<div class="row" style="margin-bottom: 10px; margin-top: 20px;">
-							<input type="text" class="form-control" id="placemarkName" name="placemarkName" style="height:40px; width:50%;" placeholder="景點名稱">
-							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLat" name="placemarkLat" placeholder="緯度(latitude)">
-							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLng" name="placemarkLng" placeholder="經度(longitude)">
+					<form id="formPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="/addPlacemark" method="post" enctype="multipart/form-data">
+						<div class="row" style="margin-top: 20px;">
+							<input type="text" class="form-control" style="height:40px; width:50%;" id="placemarkName" name="placemarkName" data-toggle="tooltip" title="輸入錯誤" placeholder="景點名稱">
+							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLat" name="placemarkLat" data-toggle="tooltip" title="輸入錯誤" placeholder="緯度(latitude)">
+							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLng" name="placemarkLng" data-toggle="tooltip" title="輸入錯誤" placeholder="經度(longitude)">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">	
 							<h4 id="tagList">
-								<input id="placemarkTag" type="text" class="form-control" style="width:130px;" placeholder="追加標籤">&nbsp;
-								<button type="button" id="btnAddTagList" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
+								<input type="text" class="form-control" style="width:130px;" id="placemarkTag"  placeholder="追加標籤" data-toggle="tooltip" title="輸入錯誤">&nbsp;
+								<button type="button" class="btn btn-info btn-xs" id="btnAddTagList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
 							</h4>
 						</div>
 						<input type="hidden" name="placemarkTagList">
 						<hr>
 						<div class="row" style="margin-bottom: 10px;">
-							<input type="text" class="form-control" id="placemarkAddress" name="placemarkAddress" style="width:99%;" placeholder="地址">
+							<input type="text" class="form-control" style="width:99%;" id="placemarkAddress" name="placemarkAddress" placeholder="地址" data-toggle="tooltip" title="輸入錯誤">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
-							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="敘述"></textarea>
+							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="描述" data-toggle="tooltip" title="輸入錯誤"></textarea>
+						</div>
+						<div class="row" style="margin-bottom: 10px;">
+							<input name="uploadImg" type="file" class="form-control lastFile" accept="image/*">
+							<input name="imgDesc" type="text" class="form-control" style="width:59%;" placeholder="圖片描述">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
 							<div class="col-md-6 col-md-offset-6">
