@@ -364,7 +364,7 @@
 				<ul class="nav navbar-nav navbar-right" id="user_bar">
 					<li id="btnAddPlacemark" class="hidden"><a href="#"><span class="glyphicon glyphicon-plus"></span> 新增景點</a></li>
 					<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
-					<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-map-marker"></span> 目標景點</a></li>
+					<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-star"></span> 目標景點</a></li>
 					<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
 					<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
 						<div id="signin-button" class="hidden"></div>
@@ -380,7 +380,7 @@
 		<div id="divPlacemark">
 			<div class="container">
 				<div class="col-md-8" style="padding: 20px;">
-					<form id="formPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="/addPlacemark" method="post" enctype="multipart/form-data">
+					<form id="formPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="manage/addPlacemark" method="post" enctype="multipart/form-data">
 						<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
 							<input type="text" class="form-control input-lg" style="width:50%;" id="placemarkName" name="placemarkName" data-toggle="tooltip" title="輸入錯誤" placeholder="景點名稱">
 							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLat" name="placemarkLat" data-toggle="tooltip" title="輸入錯誤" placeholder="緯度(latitude)">

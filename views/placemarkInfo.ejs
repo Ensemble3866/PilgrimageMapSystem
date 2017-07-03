@@ -1,14 +1,14 @@
 <script>
     /* 按照畫面由上至下、由左至右順序 */
      $("#btnDelPlacemark").click(function(){
-        $.get("/delPlacemark", function(data, status){
+        $.get("manage/delPlacemark", function(data, status){
             if(status == "success"){
 				window.location.reload();
 			}
         });
     });
 
-    $("#btnAddTag").click(function(){
+    $("#btnShowTagInput").click(function(){
 		$("#formAddTag").slideToggle();
     });
 
@@ -18,8 +18,8 @@
         }
     });
 
-    $("#btnSubmitTag").click(function(){
-        $.post("/submitTag", {
+    $("#btnAddTag").click(function(){
+        $.post("addTag", {
             tag : $("#newTag").val()
         }, function(data, status){
             if(status == "success"){
@@ -53,7 +53,7 @@
             $(this).children(":first").addClass("glyphicon-ok");
         }
         else{
-            $.post("/editAddress", { newAddress: $("#newAddress").val() });
+            $.post("manage/editAddress", { newAddress: $("#newAddress").val() });
             $(this).prev().html("<span>" + $("#newAddress").val() + "</span>");
             $(this).children(":first").removeClass("glyphicon-ok");
             $(this).children(":first").addClass("glyphicon-pencil");
@@ -61,7 +61,7 @@
     });
 
     $("#btnAddBlog").click(function(){
-         $.post("/AddBlog", { newTitle : $("#newBlogTitle").val(), newUrl: $("#newBlogUrl").val() });
+         $.post("manage/AddBlog", { newTitle : $("#newBlogTitle").val(), newUrl: $("#newBlogUrl").val() });
          var newBlog = "<li class='list-style'>" +
                          "<a href='" + $("#newBlogUrl").val() + "' target='_blank'>" + $("#newBlogTitle").val() + "</a>" +
                          "<button class='btn btn-link btn-xs manage btn-delBlog'><span class='glyphicon glyphicon-remove'></button>" +
@@ -70,7 +70,7 @@
     });
 
     $(document).on("click", ".btn-delBlog", function(){
-        $.post("/delBlog", { delTitle : $(this).prev().text() });
+        $.post("manage/delBlog", { delTitle : $(this).prev().text() });
         window.location.reload();
     });
 
@@ -83,7 +83,7 @@
             $(this).children(":first").addClass("glyphicon-ok");
         }
         else{
-            $.post("/editDesc", { newDesc: $("#newDesc").val() });
+            $.post("manage/editDesc", { newDesc: $("#newDesc").val() });
             $("#spanDesc").html($("#newDesc").val());
             $(this).children(":first").removeClass("glyphicon-ok");
             $(this).children(":first").addClass("glyphicon-pencil");
@@ -91,7 +91,7 @@
     });
 
     $(document).on("click", ".btn-delImg", function(){
-        $.post("/delImg", { delImgUrl : $(this).parent().prev().attr("src") });
+        $.post("manage/delImg", { delImgUrl : $(this).parent().prev().attr("src") });
         window.location.reload();
     });
 
@@ -124,13 +124,13 @@
                     <span class="glyphicon glyphicon-remove delTag manage" style="cursor: pointer;"></span>
                 </span>
             <% } %>
-            <button id="btnAddTag" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
+            <button id="btnShowTagInput" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
         </h4>
         <form id="formAddTag" class="form-inline" hidden>
             <div class="row" style="margin-bottom: 20px;">
                 <div class="col-md-12">
                     <input id="newTag" type="text" class="form-control">&nbsp;&nbsp;
-                    <button type="button" id="btnSubmitTag" class="btn btn-primary">送出</button>
+                    <button type="button" id="btnAddTag" class="btn btn-primary">送出</button>
                 </div>
             </div>
         </form>
@@ -173,7 +173,7 @@
             <% } %>
         </div>
         <div class="row manage">
-            <form class="form-inline" action="/addImg" method="post" enctype="multipart/form-data">
+            <form class="form-inline" action="manage/addImg" method="post" enctype="multipart/form-data">
                 <h4>上傳其他圖片：</h4>
                 <input name="newImg" type="file" class="form-control lastFile" accept="image/*">
                 <input name="newImgRemark" type="text" class="form-control" style="width:40%;" placeholder="圖片描述">
