@@ -90,7 +90,7 @@ router.post('/addPlacemark', upload.array('uploadImg', 10), function(req, res, n
 
 	/* Add tag to tagHistory. */
 	newPlacemark.save(function(err, newPlk){
-		if(err) res.status(500).send(err);
+		if(err) next(err);
 		for(var i in tagList){
 			var newHistory = new tagHistory({
 				tag: tagList[i],
@@ -100,7 +100,7 @@ router.post('/addPlacemark', upload.array('uploadImg', 10), function(req, res, n
 				checker: req.session.curUser
 			});
 			newHistory.save(function(err){
-				if(err) res.status(500).send(err);
+				if(err) next(err);
 			});
 		}
 	});

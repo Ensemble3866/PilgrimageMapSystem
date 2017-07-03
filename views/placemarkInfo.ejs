@@ -1,5 +1,30 @@
 <script>
     /* 按照畫面由上至下、由左至右順序 */
+    $("#btnSavePlacemark").click(function(){
+        if($("#spanStar").hasClass("glyphicon-star-empty")){
+            $.get("/saveUserPlacemark", function(data, status){
+                if(status == "success"){
+                    $("#spanStar").removeClass("glyphicon-star-empty");
+                    $("#spanStar").addClass("glyphicon-star");
+                    $("#spanStar").text(" 已記錄");
+                }
+            });
+        }
+        else{
+            $.get("/removeUserPlacemark", function(data, status){
+                if(status == "success"){
+                    $("#spanStar").removeClass("glyphicon-star");
+                    $("#spanStar").addClass("glyphicon-star-empty");
+                    $("#spanStar").text(" 記錄");
+                }
+            });
+        }
+    });
+
+    $("#btnGuide").click(function(){
+
+    });
+
      $("#btnDelPlacemark").click(function(){
         $.get("manage/delPlacemark", function(data, status){
             if(status == "success"){
@@ -105,11 +130,17 @@
     <div class="page-header">
         <h2>
             <span id="plmkName" style="margin-right: 30px;"><%= placemark.name %></span>
-            <button class="btn btn-primary">
-                <span class="glyphicon glyphicon-star" aria-hidden="true"> 記錄
-            </button>
-            <button class="btn btn-success">
-                <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航
+            <% if(saved){ %>
+                <button class="btn btn-primary" id="btnSavePlacemark">
+                    <span class="glyphicon glyphicon-star" id="spanStar" aria-hidden="true"> 已記錄</span>
+                </button>
+            <% } else{ %>
+                <button class="btn btn-primary" id="btnSavePlacemark">
+                    <span class="glyphicon glyphicon-star-empty" id="spanStar" aria-hidden="true"> 記錄</span>
+                </button>
+            <% } %>
+            <button class="btn btn-success" id="btnGuide">
+                <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航</span>
             </button>
             <button type="button" id="btnDelPlacemark" class="btn btn-danger manage" hidden>
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"> 刪除

@@ -60,15 +60,50 @@ router.post('/userAuth', function(req, res, next){
 
 /* Get placemark infomation. */
 router.get('/placemark/:placemarkId', function(req, res, next){
-
 	Placemarks.findOne({ _id: req.params.placemarkId }).exec(function(err, _placemark){
-		if(err) res.status(500).send(err.message);
+		if(err) next(err);
 		req.session.curPlacemark = _placemark._id;
-		res.render('placemarkInfo.ejs', {mod: req.session.auth, placemark: _placemark});
+		var isSaved = false;
+		Users.findOne({ _id: req.session.curUser }).exec(function(err, _user){
+			for(var i = 0; i < _user.savedPlacemark.length; i++){
+				if(_user.savedPlacemark[i].toString() == req.session.curPlacemark.toString()){
+					isSaved = true;
+					break;
+				}
+			}
+			res.render('placemarkInfo.ejs', {mod: req.session.auth, saved: isSaved, placemark: _placemark});
+		});
 	});
 });
 
-/* Add current placemark's tag. */
+/* 紀錄景點 */
+router.get('/saveUserPlacemark', function(req, res, next){
+	Users.findOne({ _id: req.session.curUser }).exec(function(err, _user){
+		_user.savedPlacemark.push(req.session.curPlacemark);
+		_user.save(function(err){
+			if(err) next(err);
+		});
+		res.status(200).send("success");
+	});
+});
+
+/* 取消紀錄景點 */
+router.get('/removeUserPlacemark', function(req, res, next){
+	Users.findOne({ _id: req.session.curUser }).exec(function(err, _user){
+		for(var i = 0; i < _user.savedPlacemark.length; i++){
+			if(_user.savedPlacemark[i] == req.session.curPlacemark){
+				_user.savedPlacemark.splice(i, 1);
+				_user.save(function(err){
+					if(err) next(err);
+				});
+				break;
+			}
+		}
+		res.status(200).send("success");
+	});
+});
+
+/* Add current placemark's tag by common user. */
 router.post('/addTag', function(req, res, next){
 	Placemarks.findOne({ _id: req.session.curPlacemark }).exec(function(err, _placemark){
 		if(err) next(err);
@@ -90,7 +125,7 @@ router.post('/addTag', function(req, res, next){
 	res.status(200).send("success");
 });
 
-/* Delete current placemark's tag. */
+/* Delete current placemark's tag by common user. */
 router.post('/delTag', function(req, res, next){
 	Placemarks.findOne({ _id: req.session.curPlacemark }).exec(function(err, _placemark){
 		if(err) next(err);
