@@ -21,10 +21,6 @@
         }
     });
 
-    $("#btnGuide").click(function(){
-
-    });
-
      $("#btnDelPlacemark").click(function(){
         $.get("manage/delPlacemark", function(data, status){
             if(status == "success"){
@@ -120,9 +116,14 @@
         window.location.reload();
     });
 
-    <% if(mod > 2){ %>
+    <% if(mod > 1){ %>
         /* 管理相關 */
         $(".manage").hide();
+    <% } %>
+
+    <% if(mod > 2){ %>
+        /* 會員相關 */
+        $(".member").hide();
     <% } %>
 
 </script>
@@ -131,17 +132,19 @@
         <h2>
             <span id="plmkName" style="margin-right: 30px;"><%= placemark.name %></span>
             <% if(saved){ %>
-                <button class="btn btn-primary" id="btnSavePlacemark">
+                <button class="btn btn-primary member" id="btnSavePlacemark">
                     <span class="glyphicon glyphicon-star" id="spanStar" aria-hidden="true"> 已記錄</span>
                 </button>
             <% } else{ %>
-                <button class="btn btn-primary" id="btnSavePlacemark">
+                <button class="btn btn-primary member" id="btnSavePlacemark">
                     <span class="glyphicon glyphicon-star-empty" id="spanStar" aria-hidden="true"> 記錄</span>
                 </button>
             <% } %>
+            <!-- 暫時不製作導航功能
             <button class="btn btn-success" id="btnGuide">
                 <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航</span>
             </button>
+            -->
             <button type="button" id="btnDelPlacemark" class="btn btn-danger manage" hidden>
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"> 刪除
             </button>

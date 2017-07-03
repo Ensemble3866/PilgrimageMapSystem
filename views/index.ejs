@@ -106,17 +106,17 @@
 										case 0:
 											$("#btnManagePage").removeClass("hidden");
 											$("#btnAddPlacemark").removeClass("hidden");
-											$("#btnTargetScene").removeClass("hidden");
+											$("#btnSavedPlmk").removeClass("hidden");
 											$("#btnManageAuth").removeClass("hidden");
 											break;
 										case 1:
 											$("#btnManagePage").removeClass("hidden");
 											$("#btnAddPlacemark").removeClass("hidden");
-											$("#btnTargetScene").removeClass("hidden");
+											$("#btnSavedPlmk").removeClass("hidden");
 											break;
 										case 2:
 											$("#btnAddPlacemark").removeClass("hidden");
-											$("#btnTargetScene").removeClass("hidden");
+											$("#btnSavedPlmk").removeClass("hidden");
 											break;
 										default:
 											break;
@@ -191,11 +191,28 @@
 						position: google.maps.ControlPosition.LEFT_BOTTOM
 					}
 				});
+
+				// Try HTML5 geolocation.
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function(position) {
+						var pos = {
+							lat: position.coords.latitude,
+							lng: position.coords.longitude
+						};
+						curPos = pos;
+						map.setCenter(pos);
+					});
+				}
+
 				<% for(var index in placemark) {%>
 					var marker = new google.maps.Marker({
 						position : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
 						map : map,
 						//icon : 'static/pic/placemark.png',
+						place : {
+							location : new google.maps.LatLng(<%= placemark[index].latitude %>,<%= placemark[index].longitude %>),
+							placeId : "<%= placemark[index]._id %>"
+						},
 						label : {
 							text :'<% for(i=0; i<placemark[index].tag.length; i++) {%><%=placemark[index].tag[i] %>,<% } %>', 
 							fontSize :'0px'
@@ -233,6 +250,21 @@
 					$("#btnRemoveInputOfPlacemark").click();
 					$("#placemarkInfo").hide();
 					$("#divPlacemark").show();
+				});
+
+				$("#btnSavedPlmk").click(function(){
+					$.get("/getAllSavedPlacemarkOfUser", function(data, status){
+						for (var i = 0; i < markers.length; i++) {
+							for(var j = 0; j < data.length; j++){
+								if(markers[i].getPlace().placeId.match(data) == null){
+									markers[i].setMap(null);
+								}
+								else{
+									markers[i].setMap(map);
+								} 
+							}
+						}
+					})
 				});
 
 				$("#btnGdisconnect").click(googleAuth.disconnect);
@@ -364,7 +396,7 @@
 				<ul class="nav navbar-nav navbar-right" id="user_bar">
 					<li id="btnAddPlacemark" class="hidden"><a href="#"><span class="glyphicon glyphicon-plus"></span> 新增景點</a></li>
 					<li id="btnShowNews" class="hidden"><a href="#"><span class="glyphicon glyphicon-bullhorn"></span> 最新消息</a></li>
-					<li id="btnTargetScene" class="hidden"><a href="#"><span class="glyphicon glyphicon-star"></span> 目標景點</a></li>
+					<li id="btnSavedPlmk" class="hidden"><a href="#"><span class="glyphicon glyphicon-star"></span> 目標景點</a></li>
 					<li id="btnManageAuth" class="hidden"><a href="/setauth"><span class="glyphicon glyphicon-user"></span> 管理權限</a></li>
 					<li id="gConnect" class="hidden" style="padding-top: 10px; padding-left: 10px; padding-right: 15px;">
 						<div id="signin-button" class="hidden"></div>

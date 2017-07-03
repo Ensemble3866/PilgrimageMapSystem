@@ -76,6 +76,12 @@ router.get('/placemark/:placemarkId', function(req, res, next){
 	});
 });
 
+router.get('/getAllSavedPlacemarkOfUser', function(req, res, next){
+	Users.findOne({ _id: req.session.curUser }).exec(function(err, _user){
+		res.send(_user.savedPlacemark);
+	});
+});
+
 /* 紀錄景點 */
 router.get('/saveUserPlacemark', function(req, res, next){
 	Users.findOne({ _id: req.session.curUser }).exec(function(err, _user){
