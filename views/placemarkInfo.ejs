@@ -1,4 +1,13 @@
 <script>
+    /* 按照畫面由上至下、由左至右順序 */
+     $("#btnDelPlacemark").click(function(){
+        $.get("/delPlacemark", function(data, status){
+            if(status == "success"){
+				window.location.reload();
+			}
+        });
+    });
+
     $("#btnAddTag").click(function(){
 		$("#formAddTag").slideToggle();
     });
@@ -9,14 +18,13 @@
         }
     });
 
-    $("#submitTag").click(function(){
+    $("#btnSubmitTag").click(function(){
         $.post("/submitTag", {
             tag : $("#newTag").val()
         }, function(data, status){
             if(status == "success"){
-                var newTag = "<span class='label label-info' style='padding:4px; margin-right:5px;'>" + 
-                     "<a href='#' style='color:white; text-decoration:none;'>" + $("#newTag").val() + "</a>&nbsp;" +
-                     "<a href='#' class='delTag'><span class='glyphicon glyphicon-remove'></a></span>";
+                var newTag = "<span class='label label-info label-tag'>" + $("#newTag").val() +
+                             " <span class='glyphicon glyphicon-remove delTag' style='cursor: pointer;'></span></span>";
                 $("#btnAddTag").before(newTag);
                 $("#formAddTag").slideToggle();
                 $("#newTag").val("");
@@ -27,7 +35,7 @@
     $(document).on("click", ".delTag", function(){
         var thistag = $(this);
         $.post("/delTag",{
-            tag : $(this).prev().text()
+            tag : $(this).parent().text().replace(/(^\s+)|(\s+$)/g, "")
         }, function(data, status){
             if(status == "success"){
                 //Delete tag
@@ -36,68 +44,143 @@
         });
     });
 
-    $("#btnEditPlacemark").click(function(){
-        $("#placemarkInfo").hide();
-		$("#divPlacemark").show();
+    $("#btnEditAddress").click(function(){
+        if($(this).children(":first").hasClass("glyphicon-pencil")){
+            var originAddress = $(this).prev().text().replace(/(^\s+)|(\s+$)/g, "");
+            var newAddress = "<input id='newAddress' class='form-control' style='width:200px;' type='text' value='" + originAddress + "'>";
+            $(this).prev().html(newAddress);
+            $(this).children(":first").removeClass("glyphicon-pencil");
+            $(this).children(":first").addClass("glyphicon-ok");
+        }
+        else{
+            $.post("/editAddress", { newAddress: $("#newAddress").val() });
+            $(this).prev().html("<span>" + $("#newAddress").val() + "</span>");
+            $(this).children(":first").removeClass("glyphicon-ok");
+            $(this).children(":first").addClass("glyphicon-pencil");
+        }
     });
 
-    $("#btnDelPlacemark").click(function(){
-        $.get("/delPlacemark", function(data, status){
-            if(status == "success"){
-				window.location.reload();
-			}
-        });
+    $("#btnAddBlog").click(function(){
+         $.post("/AddBlog", { newTitle : $("#newBlogTitle").val(), newUrl: $("#newBlogUrl").val() });
+         var newBlog = "<li class='list-style'>" +
+                         "<a href='" + $("#newBlogUrl").val() + "' target='_blank'>" + $("#newBlogTitle").val() + "</a>" +
+                         "<button class='btn btn-link btn-xs manage btn-delBlog'><span class='glyphicon glyphicon-remove'></button>" +
+                         "</li>";
+         $(".blog-list").append(newBlog);
     });
+
+    $(document).on("click", ".btn-delBlog", function(){
+        $.post("/delBlog", { delTitle : $(this).prev().text() });
+        window.location.reload();
+    });
+
+    $("#btnEditDesc").click(function(){
+        if($(this).children(":first").hasClass("glyphicon-pencil")){
+            var originDesc = $(this).prev().html();
+            var newDesc = "<textarea id='newDesc' class='form-control' style='width:100%; height:300px;'>" +  originDesc + "</textarea>";
+            $("#spanDesc").html(newDesc);
+            $(this).children(":first").removeClass("glyphicon-pencil");
+            $(this).children(":first").addClass("glyphicon-ok");
+        }
+        else{
+            $.post("/editDesc", { newDesc: $("#newDesc").val() });
+            $("#spanDesc").html($("#newDesc").val());
+            $(this).children(":first").removeClass("glyphicon-ok");
+            $(this).children(":first").addClass("glyphicon-pencil");
+        }
+    });
+
+    $(document).on("click", ".btn-delImg", function(){
+        $.post("/delImg", { delImgUrl : $(this).parent().prev().attr("src") });
+        window.location.reload();
+    });
+
+    <% if(mod > 2){ %>
+        /* 管理相關 */
+        $(".manage").hide();
+    <% } %>
 
 </script>
-<div class="container">	
+<div class="container">
     <div class="page-header">
-        <h2><%= placemark.name %>&nbsp;&nbsp;
-        <button class="btn btn-primary">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"> 記錄
-        </button>
-        <button class="btn btn-success">
-            <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航
-        </button>
-            <% if(mod < 2) {%>
-                <button type="button" id="btnEditPlacemark" class="btn btn-primary">
-                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"> 編輯
-                </button>
-                <button type="button" id="btnDelPlacemark" class="btn btn-danger">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"> 刪除
-                </button>
-            <% } %>
+        <h2>
+            <span id="plmkName" style="margin-right: 30px;"><%= placemark.name %></span>
+            <button class="btn btn-primary">
+                <span class="glyphicon glyphicon-star" aria-hidden="true"> 記錄
+            </button>
+            <button class="btn btn-success">
+                <span class="glyphicon glyphicon-map-marker" aria-hidden="true"> 導航
+            </button>
+            <button type="button" id="btnDelPlacemark" class="btn btn-danger manage" hidden>
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"> 刪除
+            </button>
         </h2>
-        <h4>
-            <% for(i = 0; i < placemark.tag.length; i++) {%>
-                <span class="label label-info" style="padding:4px; margin-right:5px;">
-                    <a href="#" style="color:white; text-decoration:none;"><%= placemark.tag[i] %></a>&nbsp;
-                    <% if(mod < 2) {%>
-                        <a href="#" class="delTag"><span class="glyphicon glyphicon-remove"></a>
-                    <% } %>
+    </div>
+    <div class="col-md-8">
+         <h4 id="plmkTagList">
+            <% for(i = 0; i < placemark.tag.length; i++){%>
+                <span class="label label-info label-tag">
+                    <%= placemark.tag[i] %>
+                    <span class="glyphicon glyphicon-remove delTag manage" style="cursor: pointer;"></span>
                 </span>
             <% } %>
             <button id="btnAddTag" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
         </h4>
-        <form id="formAddTag" class="form-inline" onkeypress="return event.keyCode != 13;" hidden>
-            <div class="row">
+        <form id="formAddTag" class="form-inline" hidden>
+            <div class="row" style="margin-bottom: 20px;">
                 <div class="col-md-12">
                     <input id="newTag" type="text" class="form-control">&nbsp;&nbsp;
-                    <button type="button" id="submitTag" class="btn btn-primary">送出</button>
+                    <button type="button" id="btnSubmitTag" class="btn btn-primary">送出</button>
                 </div>
             </div>
         </form>
-    </div>
-    <div class="col-md-8">
-        <p>地址：<%= placemark.address %></p>
-        <p><%= placemark.description %></p>
+        <p>地址：<span><%= placemark.address %></span>
+            <button id="btnEditAddress" type="button" class="btn btn-link btn-xs btn-edit manage">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </button>
+        </p>
+        <h5>相關連結：</h5>
+        <ul class="list-style blog-list">
+            <% for(i = 0; i < placemark.blog.length; i++) {%>
+                <li class="list-style">
+                    <a href="<%= placemark.blog[i].url %>" target="_blank"><%= placemark.blog[i].title %></a>
+                    <button class="btn btn-link btn-xs manage btn-delBlog">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </li>
+            <% } %>
+        </ul>
+        <form class="form-inline manage">
+            <input type="text" style="margin-right:5px; margin-left:26px; width:250px;" class="form-control input-sm" id="newBlogTitle" name="newBlogTitle" placeholder="標題">
+            <input type="text" style="width:300px;" class="form-control input-sm" id="newBlogUrl" name="newBlogUrl" placeholder="網址">
+            <button type="button" style="margin-left:5px;" class="btn btn-info btn-sm" id="btnAddBlog">新增</button>
+        </form>
+        <hr>
+        <p><span id="spanDesc"><%- placemark.description %></span>
+            <button id="btnEditDesc" class="btn btn-link btn-xs btn-edit manage">
+                <span class="glyphicon glyphicon-pencil">
+            </button>
+        </p>
+        <hr>
         <div class="row">
-            <div class="col-sm-6">
-                <img src="" style="height:150px" title="" class="img-responsive img-round" />
-            </div>
-            <div class="col-sm-6">
-                <img src="" style="height:150px" title="" class="img-responsive img-round" />
-            </div>
+            <% for(i = 0; i < placemark.img.length; i++) {%>
+                <div class="col-sm-6">
+                    <img src="imgs/<%= placemark.img[i].url %>" style="height: 160px;" title="" class="img-responsive img-round center-block" />
+                    <h6 class="text-center"><%= placemark.img[i].remark %>
+                        <button class="btn btn-link btn-xs manage btn-delImg"><span class="glyphicon glyphicon-remove"></button>
+                    </h6>
+                </div>
+            <% } %>
         </div>
+        <div class="row manage">
+            <form class="form-inline" action="/addImg" method="post" enctype="multipart/form-data">
+                <h4>上傳其他圖片：</h4>
+                <input name="newImg" type="file" class="form-control lastFile" accept="image/*">
+                <input name="newImgRemark" type="text" class="form-control" style="width:40%;" placeholder="圖片描述">
+                <button type="submit" style="margin-left:5px;" class="btn btn-info" id="btnAddImg">新增</button>
+            </form>
+        </div>
+        <br>
+        <br>
     </div>
 </div>

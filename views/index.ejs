@@ -34,6 +34,14 @@
 			.invisible {
 				visibility: hidden;
 			}
+			.btn-edit {
+				height:1.7em;
+			}
+			.label-tag{
+				padding:4px;
+				margin-right:6px;
+				line-height: 2.3em;
+			}
 
 		</style>
 		<!-- jQuery (Bootstrap 所有外掛均需要使用) -->
@@ -58,6 +66,7 @@
 			var auth2 = {};
 			var varTagList = [];
 			var fileNum = 1;
+			var blogNum = 1;
 			
 			//Facebook SDK init
 			window.fbAsyncInit = function() {
@@ -194,10 +203,10 @@
 						title : '<%= placemark[index].name %>'
 					});
 					marker.addListener('click', function(){
-						$("#divPlacemark").hide();
 						$("#placemarkInfo").load("/placemark/"+"<%= placemark[index]._id %>", function(){
 							console.log("Placemark load success.");	
 						});
+						$("#divPlacemark").hide();
 						$("#placemarkInfo").show();
 					});
 					markers.push(marker);
@@ -205,11 +214,11 @@
 
 				$("#keyword").keydown(function(event){
 					if( event.which == 13 ) {
-						$("#btnFilterWork").trigger("click");
+						$("#btnFilter").trigger("click");
 					}
 				});
 
-				$("#btnFilterWork").click(function(){
+				$("#btnFilter").click(function(){
 					for (var i = 0; i < markers.length; i++) {
 						if(markers[i].getLabel().text.match($("#keyword").val()) == null){
 							markers[i].setMap(null);
@@ -221,6 +230,7 @@
 				});
 				
 				$("#btnAddPlacemark").click(function(){
+					$("#btnRemoveInputOfPlacemark").click();
 					$("#placemarkInfo").hide();
 					$("#divPlacemark").show();
 				});
@@ -232,33 +242,45 @@
 						$("#placemarkTag").tooltip('show');
 						return;
 					}
-					var newTag = "<span class='label label-info' style='padding:4px; margin-left:5px;'>" + 
-						"<a href='#' style='color:white; text-decoration:none;'>" + $("#placemarkTag").val() + "</a>" +
-						"<a href='#' class='delNewTag'><span class='glyphicon glyphicon-remove'></a></span>";
-					$("#tagList").children(":last").after(newTag);
-					varTagList.push($("#placemarkTag").val());
-					$("#placemarkTag").val("");
-					$("input[name=placemarkTagList]").val(varTagList);
-					$(".delNewTag").click(function(){
-						for(var i in varTagList){
-							if(varTagList[i] == $(this).prev().text()){
-								varTagList.splice(i, 1);
-								break;
-							}
-						}
+					//新增標籤時上限為30個
+					if(varTagList.length < 10){
+						var newTag = "<span class='label label-info label-tag'>" + $("#placemarkTag").val() + 
+							         " <span class='glyphicon glyphicon-remove delNewTag' style='cursor: pointer;'></span></span>";
+						$("#tagList").append(newTag);
+						varTagList.push($("#placemarkTag").val());
+						$("#placemarkTag").val("");
 						$("input[name=placemarkTagList]").val(varTagList);
-						$(this).parent().empty();
-					});
+						$(".delNewTag").click(function(){
+							for(var i in varTagList){
+								if(varTagList[i] == $(this).prev().text()){
+									varTagList.splice(i, 1);
+									break;
+								}
+							}
+							$("input[name=placemarkTagList]").val(varTagList);
+							$(this).parent().empty();
+						});
+					}
+				});
+
+				$("#btnAddBlogList").click(function(){
+					//新增網誌連結時上限為10個
+					if(blogNum < 10){
+						var newBlog = "<div class='row' style='margin-bottom: 10px;'>"
+								+ "<input type='text' class='form-control' style='width:40%;' id='placemarkBlogTitle' name='placemarkBlogTitle' placeholder='網誌標題' data-toggle='tooltip' title='輸入錯誤'>&nbsp;"
+								+ "<input type='text' class='form-control' style='width:40%;' id='placemarkBlogUrl' name='placemarkBlogUrl' placeholder='網址' data-toggle='tooltip' title='輸入錯誤'>"
+								+ "</div>";
+						$(this).parent().after(newBlog);
+						blogNum++;
+					}
 				});
 
 				$("#btnRemoveInputOfPlacemark").click(function(){
-					$("#placemarkName").val("");
-					$("#placemarkLat").val("");
-					$("#placemarkLng").val("");
+					$("#formPlacemark").find("input,textarea").each(function(){
+						$(this).val("");
+					});
 					$("span.label-info").empty();
 					varTagList = [];
-					$("#placemarkAddress").val("");
-					$("#placemarkDesc").val("");
 				});
 
 				/*
@@ -297,10 +319,11 @@
 				*/
 			});
 			
-			$(document).on("change", "input[type=file]", function(){
+			$(document).on("change", ".uploadImg", function(){
+				//新增圖片時上限為10個
 				if(fileNum < 10 && $(this).hasClass("lastFile")){
 					var newImg = "<div class='row' style='margin-bottom: 10px;'>"
-								+ "<input name='uploadImg' type='file' class='form-control lastFile' accept='image/*'>&nbsp;"
+								+ "<input name='uploadImg' type='file' class='form-control uploadImg lastFile' accept='image/*'>&nbsp;"
 								+ "<input name='imgDesc' type='text' class='form-control' style='width:59%;' placeholder='圖片描述'>"
 								+ "</div>";
 					$(this).parent().after(newImg);
@@ -325,12 +348,12 @@
 						<img alt="Logo" src="#"> 
 					</a>
 					-->
-					<from class="navbar-form navbar-left form-inline" role="form" action="/" method="post" id="search">
+					<from class="navbar-form navbar-left form-inline">
 						<div class="form-group">
 							<div class="input-group">
 								<input type="text" class="form-control" id="keyword" style="width: 500px;">
 								<span class="input-group-btn">
-									<button type="submit" class="btn btn-default btn-md" id="btnFilterWork">
+									<button type="button" class="btn btn-default btn-md" id="btnFilter">
 										<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 									</button>
 								</span>
@@ -358,15 +381,15 @@
 			<div class="container">
 				<div class="col-md-8" style="padding: 20px;">
 					<form id="formPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="/addPlacemark" method="post" enctype="multipart/form-data">
-						<div class="row" style="margin-top: 20px;">
-							<input type="text" class="form-control" style="height:40px; width:50%;" id="placemarkName" name="placemarkName" data-toggle="tooltip" title="輸入錯誤" placeholder="景點名稱">
-							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLat" name="placemarkLat" data-toggle="tooltip" title="輸入錯誤" placeholder="緯度(latitude)">
-							<input type="text" class="form-control" style="height:40px; width:24%;" id="placemarkLng" name="placemarkLng" data-toggle="tooltip" title="輸入錯誤" placeholder="經度(longitude)">
+						<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+							<input type="text" class="form-control input-lg" style="width:50%;" id="placemarkName" name="placemarkName" data-toggle="tooltip" title="輸入錯誤" placeholder="景點名稱">
+							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLat" name="placemarkLat" data-toggle="tooltip" title="輸入錯誤" placeholder="緯度(latitude)">
+							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLng" name="placemarkLng" data-toggle="tooltip" title="輸入錯誤" placeholder="經度(longitude)">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">	
+							<input type="text" class="form-control" style="width:130px;" id="placemarkTag"  placeholder="追加標籤" data-toggle="tooltip" title="輸入錯誤">&nbsp;
+							<button type="button" class="btn btn-info btn-xs" id="btnAddTagList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button><br>
 							<h4 id="tagList">
-								<input type="text" class="form-control" style="width:130px;" id="placemarkTag"  placeholder="追加標籤" data-toggle="tooltip" title="輸入錯誤">&nbsp;
-								<button type="button" class="btn btn-info btn-xs" id="btnAddTagList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
 							</h4>
 						</div>
 						<input type="hidden" name="placemarkTagList">
@@ -375,10 +398,15 @@
 							<input type="text" class="form-control" style="width:99%;" id="placemarkAddress" name="placemarkAddress" placeholder="地址" data-toggle="tooltip" title="輸入錯誤">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
+							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogTitle" name="placemarkBlogTitle" placeholder="網誌標題" data-toggle="tooltip" title="輸入錯誤">
+							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogUrl" name="placemarkBlogUrl" placeholder="網址" data-toggle="tooltip" title="輸入錯誤">
+							<button type="button" class="btn btn-info btn-xs" id="btnAddBlogList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
+						</div>
+						<div class="row" style="margin-bottom: 10px;">
 							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="描述" data-toggle="tooltip" title="輸入錯誤"></textarea>
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
-							<input name="uploadImg" type="file" class="form-control lastFile" accept="image/*">
+							<input name="uploadImg" type="file" class="form-control uploadImg lastFile" accept="image/*">
 							<input name="imgDesc" type="text" class="form-control" style="width:59%;" placeholder="圖片描述">
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
