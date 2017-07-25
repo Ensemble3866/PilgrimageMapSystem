@@ -113,12 +113,12 @@ router.get('/removeUserPlacemark', function(req, res, next){
 router.post('/addTag', function(req, res, next){
 	Placemarks.findOne({ _id: req.session.curPlacemark }).exec(function(err, _placemark){
 		if(err) next(err);
-		_placemark.tag.push(req.body.tag);
+		_placemark.tag.push(req.body.newTag);
 		_placemark.save(function(err){
 			if(err) next(err);
 		});
 		var newHistory = new tagHistory({
-			tag: req.body.tag,
+			tag: req.body.newTag,
 			placemark:  req.session.curPlacemark,
 			isAdd: true,
 			builder: req.session.curUser,
@@ -128,7 +128,7 @@ router.post('/addTag', function(req, res, next){
 			if(err) next(err);
 		});
 	});
-	res.status(200).send("success");
+	res.status(200).send(req.body.newTag);
 });
 
 /* Delete current placemark's tag by common user. */

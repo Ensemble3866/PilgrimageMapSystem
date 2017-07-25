@@ -39,18 +39,35 @@
         }
     });
 
-    $("#btnAddTag").click(function(){
-        $.post("addTag", {
-            tag : $("#newTag").val()
-        }, function(data, status){
-            if(status == "success"){
-                var newTag = "<span class='label label-info label-tag'>" + $("#newTag").val() +
+    $("#formAddTag").validate({
+        submitHandler: function(form){    
+            $(form).ajaxSubmit({
+                success: function(data, status){
+                    var newTag = "<span class='label label-info label-tag'>" + data +
                              " <span class='glyphicon glyphicon-remove delTag' style='cursor: pointer;'></span></span>";
-                $("#btnAddTag").before(newTag);
-                $("#formAddTag").slideToggle();
-                $("#newTag").val("");
+                    $("#btnShowTagInput").before(newTag);
+                    $("#formAddTag").slideToggle();
+                },
+                clearForm: true
+            });
+        },
+        rules: {
+            newTag: {
+                required : true,
+                rangelength : [1,20]
             }
-        });
+        },
+        messages: {
+            newTag: {
+                required : "請輸入文字",
+                rangelength : "標籤長度必須介於1~20之間"
+            }
+        }
+    });
+
+    $(document).on("click", ".label-tag", function(){
+        $("#keyword").val($(this).text().replace(/(^\s+)|(\s+$)/g, ""));
+        $("#btnFilter").click();
     });
 
     $(document).on("click", ".delTag", function(){
@@ -153,18 +170,18 @@
     <div class="col-md-8">
          <h4 id="plmkTagList">
             <% for(i = 0; i < placemark.tag.length; i++){%>
-                <span class="label label-info label-tag">
+                <span class="label label-info label-tag" style="cursor: pointer;">
                     <%= placemark.tag[i] %>
                     <span class="glyphicon glyphicon-remove delTag manage" style="cursor: pointer;"></span>
                 </span>
             <% } %>
             <button id="btnShowTagInput" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
         </h4>
-        <form id="formAddTag" class="form-inline" hidden>
+        <form id="formAddTag" class="form-inline" action="/addTag" method="post" hidden>
             <div class="row" style="margin-bottom: 20px;">
                 <div class="col-md-12">
-                    <input id="newTag" type="text" class="form-control">&nbsp;&nbsp;
-                    <button type="button" id="btnAddTag" class="btn btn-primary">送出</button>
+                    <input id="newTag" name="newTag" type="text" class="form-control">&nbsp;&nbsp;
+                    <button type="submit" id="btnAddTag" class="btn btn-primary">送出</button>
                 </div>
             </div>
         </form>

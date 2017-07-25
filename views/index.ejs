@@ -51,6 +51,11 @@
 		<!-- 依需要參考已編譯外掛版本（如下），或各自獨立的外掛版本 -->
 		<script src="javascripts/bootstrap.min.js"></script>
 		<script src="javascripts/holder.min.js"></script>
+		<script src="javascripts/jquery.form.min.js"></script>
+		<script src="javascripts/jquery-vaildate/jquery.validate.js"></script>
+		<script src="javascripts/jquery-vaildate/jquery.validate.min.js"></script>
+		<script src="https://use.typekit.net/uxj3xxa.js"></script>
+		<script>try{Typekit.load({ async: true });}catch(e){}</script>
 		<!-- HTML5 shim and Respond.js 讓 IE8 支援 HTML5 元素與媒體查詢 -->
 		<!-- 警告：Respond.js 無法在 file:// 協定下運作 -->
 		<!--[if lt IE 9]>
@@ -315,40 +320,47 @@
 					varTagList = [];
 				});
 
-				/*
-				//表單驗證
-				$("#formPlacemark").submit(function(){
-					var isFormValid = true;
-					//驗證景點名稱
-					if($("#placemarkName").val().length == 0 || $("#placemarkName").val().length > 20){
-						isFormValid = false;
-						$("#placemarkName").tooltip('show');
+				$("#formPlacemark").validate({
+					errorPlacement: function(error, element) {  
+						error.appendTo(element.parent()); 
+					},
+					rules: {
+						placemarkName: {
+							required : true,
+							rangelength : [1,20]
+						},
+						placemarkLat: {
+							required : true,
+							range : [-90,90]
+						},
+						placemarkLng: {
+							required : true,
+							range : [-180,180]
+						},
+						placemarkAddress: {
+							required : true,
+							rangelength : [1,50]
+						}
+					},
+					messages: {
+						placemarkName: {
+							required : "請輸入景點名稱",
+							rangelength : "景點名稱長度必須介於1~20之間"
+						},
+						placemarkLat: {
+							required : "　請輸入緯度",
+							range : "　緯度必須介於-90~90之間"
+						},
+						placemarkLng: {
+							required : "　請輸入經度",
+							range : "　經度必須介於-180~180之間"
+						},
+						placemarkAddress: {
+							required :"請輸入景點地址",
+							rangelength : "地址長度必須介於1~50之間"
+						}
 					}
-					//驗證經緯度
-					var lat = parseFloat($("#placemarkLat").val());
-					var lng = parseFloat($("#placemarkLng").val());
-					if(isNaN(lat) || lat < -90 || lat > 90){
-						isFormValid = false;
-						$("#placemarkLat").tooltip('show');
-					}
-					if(isNaN(lng) || lng < -180 || lng > 180){
-						isFormValid = false;
-						$("#placemarkLng").tooltip('show');
-					}
-					//驗證地址
-					if($("#placemarkAddress").val().length == 0){
-						isFormValid = false;
-						$("#placemarkAddress").tooltip('show');
-					}
-					//驗證敘述
-					if($("#placemarkDesc").val().length == 0){
-						isFormValid = false;
-						$("#placemarkDesc").tooltip('show');
-					}
-
-					return isFormValid;
 				});
-				*/
 			});
 			
 			$(document).on("change", ".uploadImg", function(){
@@ -414,12 +426,12 @@
 				<div class="col-md-8" style="padding: 20px;">
 					<form id="formPlacemark" onkeypress="return event.keyCode != 13;" class="form-inline" action="manage/addPlacemark" method="post" enctype="multipart/form-data">
 						<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
-							<input type="text" class="form-control input-lg" style="width:50%;" id="placemarkName" name="placemarkName" data-toggle="tooltip" title="輸入錯誤" placeholder="景點名稱">
-							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLat" name="placemarkLat" data-toggle="tooltip" title="輸入錯誤" placeholder="緯度(latitude)">
-							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLng" name="placemarkLng" data-toggle="tooltip" title="輸入錯誤" placeholder="經度(longitude)">
+							<input type="text" class="form-control input-lg" style="width:50%;" id="placemarkName" name="placemarkName" placeholder="景點名稱" required>
+							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLat" name="placemarkLat" placeholder="緯度(latitude)" required>
+							<input type="text" class="form-control input-lg" style="width:24%;" id="placemarkLng" name="placemarkLng" placeholder="經度(longitude)" required>
 						</div>
 						<div class="row" style="margin-bottom: 10px;">	
-							<input type="text" class="form-control" style="width:130px;" id="placemarkTag"  placeholder="追加標籤" data-toggle="tooltip" title="輸入錯誤">&nbsp;
+							<input type="text" class="form-control" style="width:130px;" id="placemarkTag" placeholder="追加標籤" data-toggle="tooltip" title="輸入錯誤">&nbsp;
 							<button type="button" class="btn btn-info btn-xs" id="btnAddTagList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button><br>
 							<h4 id="tagList">
 							</h4>
@@ -427,15 +439,15 @@
 						<input type="hidden" name="placemarkTagList">
 						<hr>
 						<div class="row" style="margin-bottom: 10px;">
-							<input type="text" class="form-control" style="width:99%;" id="placemarkAddress" name="placemarkAddress" placeholder="地址" data-toggle="tooltip" title="輸入錯誤">
+							<input type="text" class="form-control" style="width:99%;" id="placemarkAddress" name="placemarkAddress" placeholder="地址" required>
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
-							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogTitle" name="placemarkBlogTitle" placeholder="網誌標題" data-toggle="tooltip" title="輸入錯誤">
-							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogUrl" name="placemarkBlogUrl" placeholder="網址" data-toggle="tooltip" title="輸入錯誤">
+							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogTitle" name="placemarkBlogTitle" placeholder="網誌標題">
+							<input type="text" class="form-control" style="width:40%;" id="placemarkBlogUrl" name="placemarkBlogUrl" placeholder="網址">
 							<button type="button" class="btn btn-info btn-xs" id="btnAddBlogList"><span class="glyphicon glyphicon-plus" aria-hidden="true"></button>
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
-							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="描述" data-toggle="tooltip" title="輸入錯誤"></textarea>
+							<textarea type="text" class="form-control" style="height:200px; width:99%;" id="placemarkDesc" name="placemarkDesc" placeholder="描述"></textarea>
 						</div>
 						<div class="row" style="margin-bottom: 10px;">
 							<input name="uploadImg" type="file" class="form-control uploadImg lastFile" accept="image/*">
